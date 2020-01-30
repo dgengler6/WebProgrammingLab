@@ -36,16 +36,8 @@ var signupSubmit = function(form){
 
 
 
-    /*form.email.setCustomValidity("");
-    //form.submit.setCustomValidity("");
-    form.pwd.setCustomValidity("");*/
-
   var reqlength = 10;
 
-/*  if(form.pwd.value.length < reqlength){
-
-    return false;
-  } */
 
 
   if(form.pwd.value != form.repPwd.value){
@@ -87,7 +79,7 @@ var signinSubmit = function(form){
    if(result.success){
      document.getElementById("viewdiv").innerHTML = document.getElementById("loggedinview").text;
      localStorage.setItem("token", result.data);
-
+     retrieveWall();
 
      return true;
    }
@@ -178,6 +170,24 @@ var postToWall = function(form){
 
 }
 
+var browsePostToWall = function(form){
+
+  var textToPost = form.browsePostText.value;
+  if(localStorage.getItem("search") != null){
+
+    var result = serverstub.postMessage(localStorage.getItem("token"), textToPost, localStorage.getItem("search"));
+    if(result.success){
+      form.browsePostText.value = "";
+      //document.getElementById("homeError").innerHTML = "<div>  " + result.message + "</div>";
+    }
+  }
+
+
+
+
+
+}
+
 
 var retrieveWall = function(){
 
@@ -191,6 +201,59 @@ var retrieveWall = function(){
           document.getElementById("listofposts").innerHTML += "<div>" + messages.data[i].content + "</div>";
       }
     }
+
+
+
+
+
+
+}
+
+var browseRetrieveWall = function(){
+
+  if(localStorage.getItem("search") != null){
+
+    var messages = serverstub.getUserMessagesByEmail(localStorage.getItem("token"), localStorage.getItem("search"));
+
+    if(messages.success){
+      document.getElementById("browseListofposts").innerHTML = "";
+      for(var i=0; i < messages.data.length; i++){
+
+          document.getElementById("browseListofposts").innerHTML += "<div>" + messages.data[i].content + "</div>";
+      }
+    }
+
+  }
+
+
+}
+
+
+var getUser = function(form){
+      var userinfo = serverstub.getUserDataByEmail(localStorage.getItem("token"), form.useremail.value);
+
+      if(userinfo.success){
+
+        localStorage.setItem("search", userinfo.data.email);
+
+        document.getElementById("searchResult").innerHTML = "<div> Email: " + userinfo.data.email + "</div>" + "<div> First name: " +
+        userinfo.data.firstname + "</div>" + "<div> Family name: " + userinfo.data.familyname + "</div>"
+        + "<div> Gender: " + userinfo.data.gender + "</div>" + "<div> City: " + userinfo.data.city + "</div>"
+        + "<div> Country: " + userinfo.data.country + "</div>";
+
+
+        document.getElementById("searchResult").innerHTML += document.getElementById("browseview").text;
+        browseRetrieveWall();
+
+
+      }
+
+      else{
+        document.getElementById("searchResult").innerHTML = userinfo.message;
+        return false;
+      }
+
+
 
 
 

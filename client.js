@@ -17,9 +17,9 @@ window.onload = function(){
     document.getElementById("viewdiv").innerHTML = document.getElementById("loggedinview").text;
 
     var userinfo = serverstub.getUserDataByToken(localStorage.getItem("token"));
-    document.getElementById("userinformation").innerHTML = "<div> Email: " + userinfo.data.email + "</div>" + "<div> First name: " +
+    document.getElementById("userinformation").innerHTML = "<div> About me :</div> <div align='right'> Email: " + userinfo.data.email + "</div>" + "<div> First name: " +
     userinfo.data.firstname + "</div>" + "<div> Family name: " + userinfo.data.familyname + "</div>"
-    + "<div> Gender: " + userinfo.data.gender + "</div>" + "<div> City: " + userinfo.data.city + "</div>"
+    + "<div> Gender: " + userinfo.data.gender + "</div>" + "<div > City: " + userinfo.data.city + "</div>"
     + "<div> Country: " + userinfo.data.country + "</div>";
 
     retrieveWall();
@@ -188,7 +188,8 @@ var retrieveWall = function(){
       document.getElementById("listofposts").innerHTML = "";
       for(var i=0; i < messages.data.length; i++){
 
-          document.getElementById("listofposts").innerHTML += "<div>" + messages.data[i].content + "</div>";
+          document.getElementById("listofposts").innerHTML += 
+          "<div class='post'> <div class='writer' >Writer : "+messages.data[i].writer +" </div> <div class='messageContent'>"+ messages.data[i].content + "</div></div>";
       }
     }
 

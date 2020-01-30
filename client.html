@@ -160,6 +160,23 @@
         <div id="Browse" class="loggedintabs">
             <!--<h3>Browse</h3>-->
 
+                    <form onsubmit="getUser(this); return false;">
+                        Enter email: <input type="Email" name="useremail" value="" required>
+                        <button type="submit" name="button">Search for user</button>
+                    </form>
+
+
+                    <div id="searchResult">
+
+                    </div>
+
+
+
+
+
+
+
+
         </div>
 
         <div id="Account" class="loggedintabs">
@@ -198,6 +215,40 @@
         </div>
 
       </script>
+
+
+
+    <script id= "browseview" type=”text/view”>
+
+      <div id="browseUserinformation">
+
+      </div>
+
+      <div class="browsePostarea">
+
+    <form onsubmit="browsePostToWall(this); return false;">
+        <textarea name="browsePostText" rows="8" cols="80"></textarea>
+        <button type="submit" name="button">Post to the wall</button>
+      </form>
+
+      </div>
+
+
+
+      <div id="browseListofposts">
+
+      </div>
+
+      <button type="button" name="button" onclick="browseRetrieveWall()">Reload wall</button>
+
+      <div id = "browseError">
+
+      </div>
+    </script>
+
+
+
+
 
 
 

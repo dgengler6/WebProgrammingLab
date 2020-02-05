@@ -1,0 +1,113 @@
+
+body{
+
+}
+
+/*The css box model
+margin:
+border:
+padding:
+*/
+.parentdiv1{
+
+  width:620px;
+  height:440px;
+  margin-right:auto;
+  margin-left:auto;
+  margin-top: 100px;
+  border:1px solid red;
+}
+
+.parentdiv2{
+
+  margin: 10px;
+  overflow: hidden;
+}
+
+.logo{
+  float:left;
+  text-align: center;
+  background-color: pink;
+  background-image: url(wimage.png);
+  width: 340px;
+  margin: 10 0 10 10px;
+  border-width: 2px;
+  border-color: 000;
+  border-style: solid;
+  padding: 200 0 200 0px;
+
+}
+
+
+
+
+.loginform{
+
+  background-color: pink;
+  position: relative;
+  margin: 0 0 10 10px;
+  border-width: 2px;
+  border-color: 000;
+  border-style: solid;
+  padding: 5px;
+  padding-bottom: 15px;
+
+}
+
+.signup{
+
+  background-color: pink;
+  position: relative;
+  margin: 0 0 10 10px;
+  border-width: 2px;
+  border-color: 000;
+  border-style: solid;
+  padding: 5px;
+  /* paddingen här är hårdkodad, fråga om hur man fyller ut tomrum.*/
+  padding-bottom: 37px;
+
+}
+
+
+/* LOGIN FORM CSS */
+.loginform div{
+  margin-bottom: 5px;
+}
+
+.loginform input{
+  float: right;
+}
+
+.loginbutton button{
+    position: absolute;
+    bottom: 0;
+    right: 0;
+
+}
+
+/*SIGN UP FORM CSS */
+
+div.signup p{
+  text-align: center;
+  font-weight: bold;
+}
+
+.signupform div{
+  margin-bottom: 10px;
+}
+
+.signupform input{
+  float: right;
+}
+
+.signupform select{
+  float: right;
+}
+
+
+.signupbutton button{
+    position: absolute;
+    bottom: 0;
+    right: 0;
+
+}

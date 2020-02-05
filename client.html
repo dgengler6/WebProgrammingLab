@@ -120,9 +120,9 @@
         </div>
 
         <div id="Home" class="loggedintabs">
-          <h3>Home</h3>
+            <!--<h3>Home</h3>-->
 
-            <div id="userinformation">
+            <div id="userinformation" class="ui">
 
             </div>
 
@@ -136,12 +136,20 @@
             </div>
 
 
+            <div class="feed">
+                <div id="topWall" >
+                    Wall
 
-            <div id="listofposts">
+                    <button type="button" name="button" onclick="retrieveWall()">Reload wall</button>
+                </div>
+                
 
+                <div id="listofposts" >
+
+                </div>
+
+                
             </div>
-
-            <button type="button" name="button" onclick="retrieveWall()">Reload wall</button>
 
             <div id = "homeError">
 
@@ -150,7 +158,7 @@
         </div>
 
         <div id="Browse" class="loggedintabs">
-            <h3>Browse</h3>
+            <!--<h3>Browse</h3>-->
 
                     <form onsubmit="getUser(this); return false;">
                         Enter email: <input type="Email" name="useremail" value="" required>
@@ -172,7 +180,7 @@
         </div>
 
         <div id="Account" class="loggedintabs">
-            <h2>Account</h2>
+            <!--<h2>Account</h2> -->
 
               <h3>Change password </h3>
               <form onsubmit="changePassword(this);return false;">

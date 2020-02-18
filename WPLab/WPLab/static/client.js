@@ -33,9 +33,6 @@ window.onload = function(){
 };
 
 var signupSubmit = function(form){
-
-
-
   var reqlength = 10;
 
 
@@ -49,24 +46,28 @@ var signupSubmit = function(form){
   }
 
 
-  var signInData = {email: form.email.value, password: form.pwd.value, firstname: form.firstname.value,
-  familyname: form.familyname.value, gender: form.gender.value, city: form.city.value, country: form.country.value};
+  var signUpData = {email: form.email.value, password: form.pwd.value, firstName: form.firstname.value,
+  lastName: form.familyname.value, gender: form.gender.value, city: form.city.value, country: form.country.value};
+  
+  var xhttp = new XMLHttpRequest();
 
-  var result = serverstub.signUp(signInData);
+  xhttp.onreadystatechange = function(){
+    if(this.readyState == 4 && status== 200){
+      var result = JSON.parse(xhttp.responseText);
 
-  console.log(result.success + " " +  result.message);
-
-  if(result.success){
-    //form.submit.setCustomValidity(result.message);
-    document.getElementById("errormsg").innerHTML = "<div>" + result.message + "</div>";
+      if(result.success){
+        //form.submit.setCustomValidity(result.message);
+        document.getElementById("errormsg").innerHTML = "<div>" + result.message + "</div>";
+      }
+      else{
+        //form.email.setCustomValidity(result.message);
+        document.getElementById("errormsg").innerHTML = "<div> Error: " + result.message + "</div>";
+      }
+    }
   }
-  else{
-    //form.email.setCustomValidity(result.message);
-    document.getElementById("errormsg").innerHTML = "<div> Error: " + result.message + "</div>";
-  }
-
-
-
+  xhttp.open("POST","/sign_up",true);
+  xhttp.send(JSON.stringify(signUpData));
+  
   return true;
 
 }
@@ -267,6 +268,7 @@ var getUser = function(form){
 
 
 }
+
 
 
 

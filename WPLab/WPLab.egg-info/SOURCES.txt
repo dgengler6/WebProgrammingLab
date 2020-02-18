@@ -1,0 +1,8 @@
+setup.py
+WPLab/__init__.py
+WPLab/server.py
+WPLab.egg-info/PKG-INFO
+WPLab.egg-info/SOURCES.txt
+WPLab.egg-info/dependency_links.txt
+WPLab.egg-info/requires.txt
+WPLab.egg-info/top_level.txt

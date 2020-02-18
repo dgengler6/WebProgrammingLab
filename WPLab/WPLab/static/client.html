@@ -1,0 +1,268 @@
+<html>
+  <head>
+    <link href="client.css" type="text/css" rel="stylesheet">
+    <script src="client.js" type="text/javascript"></script>
+    <script src="serverstub.js" type="text/javascript"></script>
+  </head>
+  <body>
+
+    <div id="viewdiv">
+
+    </div>
+
+     <!--onsubmit="signupSubmit(this);return false;"> -->
+
+    <script id= "loginview" type=”text/view”>
+    <div class = parentdiv1>
+
+        <div class = "logo">
+             <!-- placeholder punkt för att det stretchade ut bilden -->
+
+        </div>
+
+
+        <div class="parentdiv2">
+            <div class= "loginform">
+                <form onsubmit="signinSubmit(this);return false;">
+                    <div class="loginemail">
+                        Email <input type="Email" name="email" placeholder="exempel@mail.com" required>
+                    </div>
+
+                    <div class="loginpwd">
+                          Password <input type="password" name="pwd" required minlength="10">
+                    </div>
+                    <div class="loginbutton">
+                          <button type="submit" name="submit">Log in</button>
+                    </div>
+
+
+                </form>
+            </div>
+
+            <div class="signup">
+                <p>Sign up here</p>
+
+                    <div class="signupform">
+
+                        <form onsubmit="signupSubmit(this);return false;">
+
+                          <div class="signupfirstname">
+                              First name <input type="text" name="firstname" placeholder="Tim" required>
+                          </div>
+
+                          <div class="signupfamilyname">
+                              Last name <input type="text" name="familyname" placeholder="Hellberg" required>
+                          </div>
+
+                          <div class="genderdropdown">
+                            Gender <select name="gender">
+                              <option value="Male">Male</option>
+                              <option value="Female">Female</option>
+                              <option value="Other">Other</option>
+                            </select>
+                          </div>
+
+                          <div class="signupcity">
+                              City <input type="text" name="city" placeholder="Gothenburg" required>
+                          </div>
+
+                          <div class="signupcountry">
+                              Country <input type="text" name="country" placeholder="Sweden" required>
+                          </div>
+
+                          <div class="signupemail">
+                              Email <input type="Email" name="email" placeholder="tim@hellberg.com" required>
+                          </div>
+
+
+                          <div class="signuppwd">
+                              Password <input type="password" name="pwd" required minlength="10">
+                          </div>
+
+                          <div class="signuprepeatpwd">
+                              Repeat <input type="password" name="repPwd" required minlength="10">
+                          </div>
+
+                          <div class="signupbutton">
+                                <button type="submit" name="submit">SignUp</button>
+                          </div>
+
+
+
+
+
+                        </form>
+
+                    </div>
+
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div id = "errormsg">
+
+    </div>
+
+
+        </script>
+
+
+<script id= "loggedinview" type=”text/view”> <!-- -->
+
+        <div class="tab">
+            <button class="tablinks active" onclick="openTab(event, 'Home')">Home </button>
+            <button class="tablinks" onclick="openTab(event, 'Browse')">Browse </button>
+            <button class="tablinks" onclick="openTab(event, 'Account')">Account </button>
+        </div>
+
+        <div id="Home" class="loggedintabs">
+            <!--<h3>Home</h3>-->
+
+            <div id="userinformation" class="ui">
+
+            </div>
+
+            <div class="postarea">
+
+            <form onsubmit="postToWall(this); return false;">
+                <textarea name="postText" rows="8" cols="80" maxlength="500" placeholder="write your thoughts here !"></textarea>
+                <button type="submit" name="button">Post to the wall</button>
+              </form>
+
+            </div>
+
+
+            <div class="feed">
+                <div id="topWall" >
+                    Wall
+
+                    <button type="button" name="button" onclick="retrieveWall()">Reload wall</button>
+                </div>
+                
+
+                <div id="listofposts" >
+
+                </div>
+
+                
+            </div>
+
+            <div id = "homeError">
+
+            </div>
+
+        </div>
+
+        <div id="Browse" class="loggedintabs">
+            <!--<h3>Browse</h3>-->
+
+                    <form onsubmit="getUser(this); return false;">
+                        Enter email: <input type="Email" name="useremail" value="" required>
+                        <button type="submit" name="button">Search for user</button>
+                    </form>
+
+
+                    <div id="searchResult">
+
+                    </div>
+
+
+
+
+
+
+
+
+        </div>
+
+        <div id="Account" class="loggedintabs">
+            <!--<h2>Account</h2> -->
+
+              <h3>Change password </h3>
+              <form onsubmit="changePassword(this);return false;">
+
+                      <div>
+                          Old password <input type="password" name="oldPwd" required minlength="10">
+                      </div>
+
+                      <div>
+                          New password <input type="password" name="newPwd" required minlength="10">
+                      </div>
+
+                      <div>
+                          Repeat new password <input type="password" name="repPwd" required minlength="10">
+                      </div>
+
+                      <div>
+                            <button type="submit" name="submitChange">Submit</button>
+                      </div>
+
+
+            </form>
+
+              <div id = "pwdError">
+
+              </div>
+
+
+              <div>
+                    <button type="button" name="signOutBtn" onclick="signOut();">Sign out</button>
+              </div>
+        </div>
+
+      </script>
+
+
+
+    <script id= "browseview" type=”text/view”>
+
+      <div id="browseUserinformation" class="ui">
+
+      </div>
+
+      <div class="postarea">
+
+        <form onsubmit="browsePostToWall(this); return false;">
+            <textarea name="browsePostText" rows="8" cols="80" maxlength="500" placeholder="write your thoughts here !"></textarea>
+            <button type="submit" name="button">Post to the wall</button>
+        </form>
+
+      </div>
+
+
+
+      <div class="feed">
+        <div id="topWall" >
+            Wall
+
+            <button type="button" name="button" onclick="browseRetrieveWall()">Reload wall</button>
+        </div>
+        
+
+        <div id="browseListofposts" >
+
+        </div>
+
+        
+    </div>
+
+
+      <div id = "browseError">
+
+      </div>
+    </script>
+
+
+
+
+
+
+
+
+
+  </body>
+</html>

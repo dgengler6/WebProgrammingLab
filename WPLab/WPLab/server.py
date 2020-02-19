@@ -31,14 +31,14 @@ def sign_in():
                         database_helper.overwrite_token(username,new_token)
                     else:
                         database_helper.save_token(username,new_token)
-                    answer = {"success" : "True", "message" : "Sucessfully signed in !" , "data": new_token }
+                    answer = {"success" : True, "message" : "Sucessfully signed in !" , "data": new_token }
 
                 else :
-                    answer = {"success" : "False", "message" : "Wrong username or password" , "data": "" }
+                    answer = {"success" : False, "message" : "Wrong username or password" , "data": "" }
             else:
-                answer = {"success" : "False", "message" : "Wrong username or password" , "data": "" }
+                answer = {"success" : False, "message" : "Wrong username or password" , "data": "" }
         else:
-            answer = {"success" : "False", "message" : "Missing one or more field" , "data": "" }
+            answer = {"success" : False, "message" : "Missing one or more field" , "data": "" }
 
         return json.dumps(answer), 200
     else:
@@ -63,21 +63,21 @@ def sign_up():
             
             #mauybe check format of username
             if len(username) > 30 or len(password) > 40 or len (firstName) > 20  or len(lastName) > 20  or len(gender) >10 or len(city) > 20 or len(country) > 20 :
-                answer = {"success" : "False", "message" : "One of the fields is too long" , "data": "" }
+                answer = {"success" : False, "message" : "One of the fields is too long" , "data": "" }
             else:
                 if re.search(r"^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$", username):
                     if not database_helper.check_user_exists_email(username):
                         if len(password) < 10 :
-                            answer = {"success" : "False", "message" : "Password too short" , "data": "" }
+                            answer = {"success" : False, "message" : "Password too short" , "data": "" }
                         else :
                             database_helper.save_user(infos)
-                            answer = {"success" : "True", "message" : "Sucessfully signed up !" , "data": "" }
+                            answer = {"success" : True, "message" : "Sucessfully signed up !" , "data": "" }
                     else:
-                        answer = {"success" : "False", "message" : "User already exists" , "data": "" }
+                        answer = {"success" : False, "message" : "User already exists" , "data": "" }
                 else:
-                    answer = {"success" : "False", "message" : "The username is not an email adress " , "data": "" }
+                    answer = {"success" : False, "message" : "The username is not an email adress " , "data": "" }
         else:
-            answer = {"success" : "False", "message" : "Missing one or more field" , "data": "" }
+            answer = {"success" : False, "message" : "Missing one or more field" , "data": "" }
         return json.dumps(answer), 200
 
 
@@ -93,14 +93,14 @@ def sign_out():
             token = headers['token']
             #print(database_helper.get_username_from_token(token))
             if database_helper.check_user_logged_in_token(token) is False:
-                answer = {"success" : "False", "message" : "No such user logged in" , "data": "" }
+                answer = {"success" : False, "message" : "No such user logged in" , "data": "" }
             else:
                 if database_helper.remove_token(token):
-                    answer = {"success" : "True", "message" : "Sucessfully signed out !" , "data": "" }
+                    answer = {"success" : True, "message" : "Sucessfully signed out !" , "data": "" }
                 else : 
-                    answer = {"success" : "False", "message" : "Unable to sign out !" , "data": "" }
+                    answer = {"success" : False, "message" : "Unable to sign out !" , "data": "" }
         else:
-            answer = {"success" : "False", "message" : "Missing one or more field" , "data": "" }
+            answer = {"success" : False, "message" : "Missing one or more field" , "data": "" }
         return json.dumps(answer), 200
     else :
         abort(404)
@@ -123,17 +123,17 @@ def change_password():
                 if database_helper.get_password(username)==oldpwd:
                     if len(newpwd) >=10 :
                         if database_helper.change_password(token,newpwd) :
-                            answer = {"success" : "True", "message" : "Sucessfully changed password !" , "data": "" }
+                            answer = {"success" : True, "message" : "Sucessfully changed password !" , "data": "" }
                         else:
-                            answer = {"success" : "False", "message" : "Unable to change password" , "data": "" }
+                            answer = {"success" : False, "message" : "Unable to change password" , "data": "" }
                     else: 
-                        answer = {"success" : "False", "message" : "New password is too short" , "data": "" }
+                        answer = {"success" : False, "message" : "New password is too short" , "data": "" }
                 else:
-                    answer = {"success" : "False", "message" : "Old passwords don't match" , "data": "" }
+                    answer = {"success" : False, "message" : "Old passwords don't match" , "data": "" }
             else:
-                answer = {"success" : "False", "message" : "You are not logged in" , "data": "" }
+                answer = {"success" : False, "message" : "You are not logged in" , "data": "" }
         else: 
-            answer = {"success" : "False", "message" : "Missing one or more field" , "data": "" }
+            answer = {"success" : False, "message" : "Missing one or more field" , "data": "" }
         return json.dumps(answer), 200
     else:
         abort(404)
@@ -147,11 +147,11 @@ def get_user_data_by_token():
             token = headers['token']
             data = database_helper.get_user_data_from_token(token)
             if data is False :
-                answer = {"success" : "False", "message" : "No such user logged in" , "data": "" }
+                answer = {"success" : False, "message" : "No such user logged in" , "data": "" }
             else : 
-                answer = {"success" : "True", "message" : "Retreiving data from server " , "data": data }
+                answer = {"success" : True, "message" : "Retreiving data from server " , "data": data }
         else :
-            answer = {"success" : "False", "message" : "Missing one or more field" , "data": "" }
+            answer = {"success" : False, "message" : "Missing one or more field" , "data": "" }
         return json.dumps(answer), 200
     else:
         abort(404)
@@ -166,15 +166,15 @@ def get_user_data_by_email(username):
                 if re.search(r"^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$", username):
                     data = database_helper.get_user_data_from_email(username)
                     if data is False :
-                        answer = {"success" : "False", "message" : "No such user in the system" , "data": "" }
+                        answer = {"success" : False, "message" : "No such user in the system" , "data": "" }
                     else :
-                        answer = {"success" : "True", "message" : "Here's the data" , "data": data }
+                        answer = {"success" : True, "message" : "Here's the data" , "data": data }
                 else:
-                    answer = {"success" : "False", "message" : "The username is not an email adress " , "data": "" }
+                    answer = {"success" : False, "message" : "The username is not an email adress " , "data": "" }
             else:
-                answer = {"success" : "False", "message" : "You are not logged in anymore" , "data": "" }
+                answer = {"success" : False, "message" : "You are not logged in anymore" , "data": "" }
         else:
-            answer = {"success" : "False", "message" : "Username or token missing from data" , "data": "" }
+            answer = {"success" : False, "message" : "Username or token missing from data" , "data": "" }
         return json.dumps(answer), 200
     else:
         abort(404)
@@ -188,16 +188,16 @@ def get_user_messages_by_token():
             if database_helper.check_user_logged_in_token(token):
                 data = database_helper.retrieve_message_token(token)
                 if data is False :
-                    answer = {"success" : "False", "message" : "You don't have any messages" , "data": None }
+                    answer = {"success" : False, "message" : "You don't have any messages" , "data": None }
                     return json.dumps(answer), 200
                 else :
-                    answer = {"success" : "True", "message" : "Here are the messages" , "data": data }
+                    answer = {"success" : True, "message" : "Here are the messages" , "data": data }
                     return json.dumps(answer), 200
             else:
-                answer = {"success" : "False", "message" : "You are not logged in anymore" , "data": "" }
+                answer = {"success" : False, "message" : "You are not logged in anymore" , "data": "" }
                 return json.dumps(answer), 200
         else:
-            answer = {"success" : "False", "message" : "No token in data" , "data": "" }
+            answer = {"success" : False, "message" : "No token in data" , "data": "" }
             return json.dumps(answer), 200
     else:
         abort(404)
@@ -213,15 +213,15 @@ def get_user_messages_by_email(username):
                     if database_helper.check_user_exists_email(username):
                         data = database_helper.retrieve_message_email(username)
                         if not data :
-                            answer = {"success" : "False", "message" : "You don't have any messages" , "data": None }
+                            answer = {"success" : False, "message" : "You don't have any messages" , "data": None }
                         else :
-                            answer = {"success" : "True", "message" : "Here are the messages" , "data": data }
+                            answer = {"success" : True, "message" : "Here are the messages" , "data": data }
                     else: 
-                        answer = {"success" : "False", "message" : "No such user in the system" , "data": "" }
+                        answer = {"success" : False, "message" : "No such user in the system" , "data": "" }
                 else:
-                    answer = {"success" : "False", "message" : "The username is not an email adress " , "data": "" }
+                    answer = {"success" : False, "message" : "The username is not an email adress " , "data": "" }
             else:
-                answer = {"success" : "False", "message" : "You are not logged in anymore" , "data": "" }
+                answer = {"success" : False, "message" : "You are not logged in anymore" , "data": "" }
             return json.dumps(answer), 200
     else:
         abort(404)
@@ -241,15 +241,15 @@ def post_message():
                 writer = database_helper.get_username_from_token(token)
                 if database_helper.check_user_exists_email(receiver):
                     if database_helper.post_message(receiver,writer,message):
-                        answer = {"success" : "True", "message" : "Sucessfully posted message " , "data": "" }
+                        answer = {"success" : True, "message" : "Sucessfully posted message " , "data": "" }
                     else:
-                        answer = {"success" : "False", "message" : "Unable to post message " , "data": "" }
+                        answer = {"success" : False, "message" : "Unable to post message " , "data": "" }
                 else: 
-                    answer = {"success" : "False", "message" : "No such user in the system" , "data": "" }
+                    answer = {"success" : False, "message" : "No such user in the system" , "data": "" }
             else:
-                answer = {"success" : "False", "message" : "The username is not an email adress " , "data": "" }
+                answer = {"success" : False, "message" : "The username is not an email adress " , "data": "" }
         else:
-            answer = {"success" : "False", "message" : "You are not logged in anymore" , "data": "" }
+            answer = {"success" : False, "message" : "You are not logged in anymore" , "data": "" }
         return json.dumps(answer), 200
     else:
         abort(404)

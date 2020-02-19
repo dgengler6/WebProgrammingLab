@@ -209,7 +209,7 @@ var postToWall = function(form){
 }
 
 var browsePostToWall = function(form){
-
+  try{
   var textToPost = form.browsePostText.value;
   if(localStorage.getItem("search") != null){
 
@@ -218,21 +218,24 @@ var browsePostToWall = function(form){
     xhttp.setRequestHeader("token", localStorage.getItem("token"));
     xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
     var paramsToSend = {"message": textToPost, "username": localStorage.getItem("search")};
+    xhttp.onreadystatechange = function(){
+      if(this.readyState == 4 && this.status== 200){
+          var result = JSON.parse(xhttp.responseText);
+          if(result.success){
+            form.browsePostText.value = "";
+            //document.getElementById("homeError").innerHTML = "<div>  " + result.message + "</div>";
+          }
 
-    if(this.readyState == 4 && this.status== 200){
-        var result = JSON.parse(xhttp.responseText());
-        if(result.success){
-          form.browsePostText.value = "";
-          //document.getElementById("homeError").innerHTML = "<div>  " + result.message + "</div>";
-        }
-
+      }
     }
 
-    xhttp.send(stringify(paramsToSend));
+    xhttp.send(JSON.stringify(paramsToSend));
 
   }
 
-
+}catch(e){
+  console.log(e);
+}
 
 
   }
@@ -246,12 +249,14 @@ var retrieveUserData = function(){
   xhttp.setRequestHeader("token", localStorage.getItem("token"));
   xhttp.onreadystatechange = function(){
     if(this.readyState == 4 && this.status== 200){
-        var result = JSON.parse(xhttp.responseText);
-        var userinfo = result;
+        var userinfo = JSON.parse(xhttp.responseText);
+        
+        if(userinfo.success){
         document.getElementById("userinformation").innerHTML = "<div> About me :</div> <div align='right'> Email: " + userinfo.data.email + "</div>" + "<div> First name: " +
         userinfo.data.firstName + "</div>" + "<div> Family name: " + userinfo.data.lastName + "</div>"
         + "<div> Gender: " + userinfo.data.gender + "</div>" + "<div > City: " + userinfo.data.city + "</div>"
         + "<div> Country: " + userinfo.data.country + "</div>";
+      }
     }
   }
   xhttp.send();
@@ -314,7 +319,7 @@ var getUser = function(form){
         if(this.readyState == 4 && this.status== 200){
             var userinfo = JSON.parse(xhttp.responseText);
             if(userinfo.success){
-
+              
               localStorage.setItem("search", userinfo.data.email);
 
 
@@ -331,7 +336,6 @@ var getUser = function(form){
 
             else{
               document.getElementById("searchResult").innerHTML = userinfo.message;
-              return false;
             }
 
         }

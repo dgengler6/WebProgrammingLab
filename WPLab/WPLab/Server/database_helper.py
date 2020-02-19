@@ -92,20 +92,20 @@ def get_user_data_from_token(token):
     c = get_db().cursor()
     c.execute("SELECT email,firstName,lastName,gender,city,country FROM users WHERE email in (SELECT email FROM loggedInUsers WHERE token=?)", (token,) ) 
     resultArray = c.fetchone()
-    result = {"email": resultArray[0], "firstName": resultArray[1], "lastName":resultArray[2], "gender":resultArray[3],"city":resultArray[4],"country":resultArray[5]}
-    if result is None :
+      if resultArray is None :
         return False
     else :
+        result = {"email": resultArray[0], "firstName": resultArray[1], "lastName":resultArray[2], "gender":resultArray[3],"city":resultArray[4],"country":resultArray[5]}
         return result
 
 def get_user_data_from_email(email):
     c = get_db().cursor()
     c.execute("SELECT email,firstName,lastName,gender,city,country FROM users WHERE email=?", (email,) ) 
     resultArray = c.fetchone()
-    result = {"email": resultArray[0], "firstName": resultArray[1], "lastName":resultArray[2], "gender":resultArray[3],"city":resultArray[4],"country":resultArray[5]}
-    if result is None :
+    if resultArray is None :
         return False
     else :
+        result = {"email": resultArray[0], "firstName": resultArray[1], "lastName":resultArray[2], "gender":resultArray[3],"city":resultArray[4],"country":resultArray[5]}
         return result
 
 def retrieve_message_token(token):

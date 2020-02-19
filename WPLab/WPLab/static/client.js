@@ -43,7 +43,7 @@ var signupSubmit = function(form){
 
   var signUpData = {username: form.email.value, password: form.pwd.value, firstName: form.firstname.value,
   lastName: form.familyname.value, gender: form.gender.value, city: form.city.value, country: form.country.value};
-  
+
   var xhttp = new XMLHttpRequest();
 
   xhttp.open("POST","/sign_up",true);
@@ -52,7 +52,7 @@ var signupSubmit = function(form){
   xhttp.onreadystatechange = function(){
     if(this.readyState == 4 && this.status== 200){
       var result = JSON.parse(xhttp.responseText);
-      
+
       if(result.success){
         //form.submit.setCustomValidity(result.message);
         document.getElementById("errormsg").innerHTML = "<div>" + result.message + "</div>";
@@ -64,7 +64,7 @@ var signupSubmit = function(form){
     }
   }
   xhttp.send(JSON.stringify(signUpData));
-  
+
   return true;
 
 }
@@ -82,7 +82,7 @@ var signinSubmit = function(form){
     xhttp.onreadystatechange = function(){
       if(this.readyState == 4 && this.status== 200){
           var result = JSON.parse(xhttp.responseText);
-          
+
           console.log(result);
         if(result.success){
           localStorage.setItem("token", result.data);
@@ -134,7 +134,7 @@ var changePassword = function(form){
     }
 
     else{
-        
+
       httpChangePassword(form);
     }
   }catch(e){
@@ -145,20 +145,21 @@ var changePassword = function(form){
 
 var signOut = function(){
 
-  
-  var xhttp = new XMLHttpRequest();
-  xhttp.open("POST","/sign_out",true);
-  xhttp.setRequestHeader("token", localStorage.getItem("token"));
-  xhttp.onreadystatechange = function(){
-    if(this.readyState == 4 && this.status== 200){
-        var result = JSON.parse(xhttp.responseText);
-        if(result.success){
-          localStorage.removeItem("token");
-          document.getElementById("viewdiv").innerHTML = document.getElementById("loginview").text;
-          document.getElementById("errormsg").innerHTML = "<div>  " + result.message + "</div>";
-        }
+
+    var xhttp = new XMLHttpRequest();
+    xhttp.open("POST","/sign_out",true);
+    xhttp.setRequestHeader("token", localStorage.getItem("token"));
+    xhttp.onreadystatechange = function(){
+      if(this.readyState == 4 && this.status== 200){
+          var result = JSON.parse(xhttp.responseText);
+          if(result.success){
+            localStorage.removeItem("token");
+            document.getElementById("viewdiv").innerHTML = document.getElementById("loginview").text;
+            document.getElementById("errormsg").innerHTML = "<div>  " + result.message + "</div>";
+          }
+      }
     }
-  }
+  
   xhttp.send();
   return true;
 }
@@ -212,18 +213,32 @@ var browsePostToWall = function(form){
   var textToPost = form.browsePostText.value;
   if(localStorage.getItem("search") != null){
 
-    var result = serverstub.postMessage(localStorage.getItem("token"), textToPost, localStorage.getItem("search"));
-    if(result.success){
-      form.browsePostText.value = "";
-      //document.getElementById("homeError").innerHTML = "<div>  " + result.message + "</div>";
+    var xhttp = new XMLHttpRequest();
+    xhttp.open("POST", "/post_message", true);
+    xhttp.setRequestHeader("token", localStorage.getItem("token"));
+    xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+    var paramsToSend = {"message": textToPost, "username": localStorage.getItem("search")};
+
+    if(this.readyState == 4 && this.status== 200){
+        var result = JSON.parse(xhttp.responseText());
+        if(result.success){
+          form.browsePostText.value = "";
+          //document.getElementById("homeError").innerHTML = "<div>  " + result.message + "</div>";
+        }
+
     }
+
+    xhttp.send(stringify(paramsToSend));
+
   }
 
 
 
 
+  }
 
-}
+
+
 
 var retrieveUserData = function(){
   var xhttp = new XMLHttpRequest();
@@ -254,12 +269,12 @@ var retrieveWall = function(){
         if(messages.success){
           document.getElementById("listofposts").innerHTML = "";
           for(var i=0; i < messages.data.length; i++){
-    
-              document.getElementById("listofposts").innerHTML += 
+
+              document.getElementById("listofposts").innerHTML +=
               "<div class='post'> <div class='writer' >Writer : "+messages.data[i].writer +" </div> <div class='messageContent'>"+ messages.data[i].content + "</div></div>";
           }
         }
-        
+
     }
   }
   xhttp.send();
@@ -276,9 +291,9 @@ var browseRetrieveWall = function(){
       document.getElementById("browseListofposts").innerHTML = "";
       for(var i=0; i < messages.data.length; i++){
 
-          document.getElementById("browseListofposts").innerHTML += 
+          document.getElementById("browseListofposts").innerHTML +=
           "<div class='post'> <div class='writer' >Writer : "+messages.data[i].writer +" </div> <div class='messageContent'>"+ messages.data[i].content + "</div></div>";
-    
+
       }
     }
 
@@ -294,37 +309,37 @@ var getUser = function(form){
       xhttp.open("GET","/get_user_data_email/"+form.useremail.value,true);
       xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
       xhttp.setRequestHeader("token", localStorage.getItem("token"));
-  
+
       xhttp.onreadystatechange = function(){
         if(this.readyState == 4 && this.status== 200){
             var userinfo = JSON.parse(xhttp.responseText);
             if(userinfo.success){
 
               localStorage.setItem("search", userinfo.data.email);
-      
-             
+
+
               document.getElementById("searchResult").innerHTML = "";
               document.getElementById("searchResult").innerHTML += document.getElementById("browseview").text;
               document.getElementById("browseUserinformation").innerHTML = "<div> Email: " + userinfo.data.email + "</div>" + "<div> First name: " +
               userinfo.data.firstName + "</div>" + "<div> Family name: " + userinfo.data.lastName + "</div>"
               + "<div> Gender: " + userinfo.data.gender + "</div>" + "<div> City: " + userinfo.data.city + "</div>"
               + "<div> Country: " + userinfo.data.country + "</div>";
-      
+
               browseRetrieveWall();
-      
+
             }
-      
+
             else{
               document.getElementById("searchResult").innerHTML = userinfo.message;
               return false;
             }
-            
+
         }
       }
       xhttp.send();
-      
 
-      
+
+
 
 
 
@@ -359,12 +374,12 @@ var httpChangePassword = function(form){
   xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
   xhttp.setRequestHeader("token", localStorage.getItem("token"));
   var data = {"oldPassword": form.oldPwd.value, "newPassword": form.newPwd.value};
-  
+
 
   xhttp.onreadystatechange = function(){
     if(this.readyState == 4 && this.status== 200){
         var result = JSON.parse(xhttp.responseText);
-        
+
       if(result.success){
 
         document.getElementById("pwdError").innerHTML = "<div>" + result.message + "</div>";
@@ -373,15 +388,10 @@ var httpChangePassword = function(form){
 
         document.getElementById("pwdError").innerHTML = "<div> Error: " + result.message + "</div>";
       }
-        
+
     }
   }
   xhttp.send(JSON.stringify(data));
 
   return true;
 }
-
-
-
-
-

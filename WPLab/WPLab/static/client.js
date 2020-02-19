@@ -146,19 +146,19 @@ var changePassword = function(form){
 var signOut = function(){
 
   
-    var xhttp = new XMLHttpRequest();
-    xhttp.open("POST","/sign_out",true);
-    xhttp.setRequestHeader("token", localStorage.getItem("token"));
-    xhttp.onreadystatechange = function(){
-      if(this.readyState == 4 && this.status== 200){
-          var result = JSON.parse(xhttp.responseText);
-          if(result.success){
-            localStorage.removeItem("token");
-            document.getElementById("viewdiv").innerHTML = document.getElementById("loginview").text;
-            document.getElementById("errormsg").innerHTML = "<div>  " + result.message + "</div>";
-          }
-      }
+  var xhttp = new XMLHttpRequest();
+  xhttp.open("POST","/sign_out",true);
+  xhttp.setRequestHeader("token", localStorage.getItem("token"));
+  xhttp.onreadystatechange = function(){
+    if(this.readyState == 4 && this.status== 200){
+        var result = JSON.parse(xhttp.responseText);
+        if(result.success){
+          localStorage.removeItem("token");
+          document.getElementById("viewdiv").innerHTML = document.getElementById("loginview").text;
+          document.getElementById("errormsg").innerHTML = "<div>  " + result.message + "</div>";
+        }
     }
+  }
   xhttp.send();
   return true;
 }
@@ -166,18 +166,42 @@ var signOut = function(){
 
 var postToWall = function(form){
 
-  var textToPost = form.postText.value;
-  var email = serverstub.getUserDataByToken(localStorage.getItem("token")).data.email;
-  var result = serverstub.postMessage(localStorage.getItem("token"), textToPost, email);
+  
+  //var email = serverstub.getUserDataByToken(localStorage.getItem("token")).data.email;
+  //var result = serverstub.postMessage(localStorage.getItem("token"), textToPost, email);
 
-  if(result.success){
-    form.postText.value = "";
-    //document.getElementById("homeError").innerHTML = "<div>  " + result.message + "</div>";
+  var xhttp = new XMLHttpRequest();
+  xhttp.open("GET","/get_user_data_token",true);
+  xhttp.setRequestHeader("token", localStorage.getItem("token"));
+  xhttp.onreadystatechange = function(){
+    if(this.readyState == 4 && this.status== 200){
+        var userData = JSON.parse(xhttp.responseText);
+        var textToPost = {"username": userData.data.email,"message": form.postText.value};
+        
+        if(userData.success){
+          var xhttpInner = new XMLHttpRequest();
+          xhttpInner.open("POST","/post_message",true);
+          xhttpInner.setRequestHeader("token", localStorage.getItem("token"));
+          xhttpInner.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+          xhttpInner.onreadystatechange = function(){
+            if(this.readyState == 4 && this.status== 200){
+              var result = JSON.parse(xhttpInner.responseText);
+              if(result.success){
+                form.postText.value = "";
+                //document.getElementById("homeError").innerHTML = "<div>  " + result.message + "</div>";
+              }
+              else{
+                document.getElementById("homeError").innerHTML = "<div> Error: " + result.message + "</div>";
+              }
+            }
+          }
+          xhttpInner.send(JSON.stringify(textToPost));
+        }
+    }
   }
-  else{
-    document.getElementById("homeError").innerHTML = "<div> Error: " + result.message + "</div>";
-  }
-
+  xhttp.send();
+  
+  
 
 
 
@@ -356,6 +380,8 @@ var httpChangePassword = function(form){
 
   return true;
 }
+
+
 
 
 

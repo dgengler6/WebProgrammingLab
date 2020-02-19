@@ -159,7 +159,7 @@ var signOut = function(){
           }
       }
     }
-  
+
   xhttp.send();
   return true;
 }
@@ -167,7 +167,7 @@ var signOut = function(){
 
 var postToWall = function(form){
 
-  
+
   //var email = serverstub.getUserDataByToken(localStorage.getItem("token")).data.email;
   //var result = serverstub.postMessage(localStorage.getItem("token"), textToPost, email);
 
@@ -178,7 +178,7 @@ var postToWall = function(form){
     if(this.readyState == 4 && this.status== 200){
         var userData = JSON.parse(xhttp.responseText);
         var textToPost = {"username": userData.data.email,"message": form.postText.value};
-        
+
         if(userData.success){
           var xhttpInner = new XMLHttpRequest();
           xhttpInner.open("POST","/post_message",true);
@@ -201,8 +201,8 @@ var postToWall = function(form){
     }
   }
   xhttp.send();
-  
-  
+
+
 
 
 
@@ -250,7 +250,7 @@ var retrieveUserData = function(){
   xhttp.onreadystatechange = function(){
     if(this.readyState == 4 && this.status== 200){
         var userinfo = JSON.parse(xhttp.responseText);
-        
+
         if(userinfo.success){
         document.getElementById("userinformation").innerHTML = "<div> About me :</div> <div align='right'> Email: " + userinfo.data.email + "</div>" + "<div> First name: " +
         userinfo.data.firstName + "</div>" + "<div> Family name: " + userinfo.data.lastName + "</div>"
@@ -291,16 +291,31 @@ var browseRetrieveWall = function(){
   if(localStorage.getItem("search") != null){
 
     var messages = serverstub.getUserMessagesByEmail(localStorage.getItem("token"), localStorage.getItem("search"));
+    var xhttp = new XMLHTTPRequest();
+    xhttp.open("GET", "get_user_messages_email/" + localStorage.getItem("search"), true);
 
-    if(messages.success){
-      document.getElementById("browseListofposts").innerHTML = "";
-      for(var i=0; i < messages.data.length; i++){
+    xhttp.setRequestHeader("token", localStorage.getItem("token"));
+    xhttp.onreadystatechange = function(){
+      if(this.readyState == 4 && this.status== 200){
+        var messages = JSON.parse(xhttp.responseText);
+        if(messages.success){
+          document.getElementById("browseListofposts").innerHTML = "";
+          for(var i=0; i < messages.data.length; i++){
 
-          document.getElementById("browseListofposts").innerHTML +=
-          "<div class='post'> <div class='writer' >Writer : "+messages.data[i].writer +" </div> <div class='messageContent'>"+ messages.data[i].content + "</div></div>";
+              document.getElementById("browseListofposts").innerHTML +=
+              "<div class='post'> <div class='writer' >Writer : "+messages.data[i].writer +" </div> <div class='messageContent'>"+ messages.data[i].content + "</div></div>";
+
+          }
+        }
+
 
       }
     }
+    xhttp.send();
+
+
+
+
 
   }
 
@@ -319,7 +334,7 @@ var getUser = function(form){
         if(this.readyState == 4 && this.status== 200){
             var userinfo = JSON.parse(xhttp.responseText);
             if(userinfo.success){
-              
+
               localStorage.setItem("search", userinfo.data.email);
 
 

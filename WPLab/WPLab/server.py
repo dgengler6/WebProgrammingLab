@@ -17,9 +17,9 @@ def after_request(exception):
 
 
 #Decided to put POST request so the username and the password are not in the URL 
-@app.route('/sign_in', methods = ['GET'])
+@app.route('/sign_in', methods = ['POST'])
 def sign_in():
-    if request.method == 'GET' :
+    if request.method == 'POST' :
         data=request.get_json()
         if 'username' in data and 'password' in data:
             username=data['username']
@@ -50,8 +50,7 @@ def sign_in():
 def sign_up():
     if request.method == 'POST' :
         data = request.get_json()
-        print(request)
-        print(data)
+        
         if 'username' in data and 'password' in data and 'firstName' in data and 'lastName' in data and 'gender' in data and 'city' in data and 'country' in data:
             username=data['username']
             password=data['password']
@@ -61,7 +60,7 @@ def sign_up():
             city=data['city']
             country=data['country']
             infos = [username,password,firstName,lastName,gender,city,country]
-
+            
             #mauybe check format of username
             if len(username) > 30 or len(password) > 40 or len (firstName) > 20  or len(lastName) > 20  or len(gender) >10 or len(city) > 20 or len(country) > 20 :
                 answer = {"success" : "False", "message" : "One of the fields is too long" , "data": "" }
@@ -79,7 +78,6 @@ def sign_up():
                     answer = {"success" : "False", "message" : "The username is not an email adress " , "data": "" }
         else:
             answer = {"success" : "False", "message" : "Missing one or more field" , "data": "" }
-
         return json.dumps(answer), 200
 
 
@@ -90,9 +88,9 @@ def sign_up():
 @app.route('/sign_out', methods = ['POST'])
 def sign_out():
     if request.method == 'POST' :
-        data = request.get_json()
-        if 'token' in data :
-            token = data['token']
+        headers = request.headers
+        if 'token' in headers :
+            token = headers['token']
             #print(database_helper.get_username_from_token(token))
             if database_helper.check_user_logged_in_token(token) is False:
                 answer = {"success" : "False", "message" : "No such user logged in" , "data": "" }
@@ -114,8 +112,9 @@ def sign_out():
 def change_password():
     if request.method == 'POST' :
         data = request.get_json()
-        if 'token' in data and 'oldPassword' in data and 'newPassword' in data:
-            token = data['token']
+        headers= request.headers
+        if 'token' in headers and 'oldPassword' in data and 'newPassword' in data:
+            token = headers['token']
             oldpwd = data['oldPassword']
             newpwd = data['newPassword']
             username = database_helper.get_username_from_token(token)
@@ -143,9 +142,9 @@ def change_password():
 @app.route('/get_user_data_token', methods = ['GET'])
 def get_user_data_by_token():
     if request.method == 'GET' :
-        data = request.get_json()
-        if 'token' in data :
-            token = data['token']
+        headers = request.headers
+        if 'token' in headers :
+            token = headers['token']
             data = database_helper.get_user_data_from_token(token)
             if data is False :
                 answer = {"success" : "False", "message" : "No such user logged in" , "data": "" }
@@ -157,14 +156,12 @@ def get_user_data_by_token():
     else:
         abort(404)
 #Change to JSON
-@app.route('/get_user_data_email', methods = ['GET'])
-def get_user_data_by_email():
+@app.route('/get_user_data_email/<username>', methods = ['GET'])
+def get_user_data_by_email(username):
     if request.method == 'GET' :
-        data = request.get_json()
-        if 'token' in data and 'username' in data:
-            token = data['token']
-            username = data['username']
-
+        headers = request.headers
+        if 'token' in headers:
+            token = headers['token']
             if database_helper.check_user_logged_in_token(token):
                 if re.search(r"^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$", username):
                     data = database_helper.get_user_data_from_email(username)
@@ -185,9 +182,9 @@ def get_user_data_by_email():
 @app.route('/get_user_messages_token', methods = ['GET'])
 def get_user_messages_by_token():
     if request.method == 'GET' :
-        data=request.get_json()
-        if 'token' in data:
-            token=data['token']
+        headers=request.headers
+        if 'token' in headers:
+            token=headers['token']
             if database_helper.check_user_logged_in_token(token):
                 data = database_helper.retrieve_message_token(token)
                 if data is False :
@@ -205,13 +202,12 @@ def get_user_messages_by_token():
     else:
         abort(404)
 
-@app.route('/get_user_messages_email', methods = ['GET'])
-def get_user_messages_by_email():
+@app.route('/get_user_messages_email/<username>', methods = ['GET'])
+def get_user_messages_by_email(username):
     if request.method == 'GET' :
-        data=request.get_json()
-        if 'username' in data and 'token' in data:
-            token = data['token']
-            username = data['username']
+        headers = request.headers
+        if 'token' in headers:
+            token = headers['token']
             if database_helper.check_user_logged_in_token(token):
                 if re.search(r"^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$", username):
                     if database_helper.check_user_exists_email(username):
@@ -234,10 +230,11 @@ def get_user_messages_by_email():
 def post_message():
     if request.method == 'POST' :
         data=request.get_json()
-        if 'username' in data and 'message' in data and 'token' in data:
+        headers = request.headers
+        if 'username' in data and 'message' in data and 'token' in headers:
             receiver=data['username']
             message=data['message']
-            token=data['token']
+            token=headers['token']
 
         if database_helper.check_user_logged_in_token(token):
             if re.search(r"^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$", receiver):

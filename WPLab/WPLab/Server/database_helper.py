@@ -2,7 +2,7 @@ import sqlite3
 from flask import g
 
 def connect_db():
-    return sqlite3.connect("database.db")
+    return sqlite3.connect("WPLab/WPLab/Server/database.db")
 
 def disconnect_db():
     db = getattr(g, 'db', None) 
@@ -91,7 +91,8 @@ def get_username_from_token(token):
 def get_user_data_from_token(token):
     c = get_db().cursor()
     c.execute("SELECT email,firstName,lastName,gender,city,country FROM users WHERE email in (SELECT email FROM loggedInUsers WHERE token=?)", (token,) ) 
-    result = c.fetchone()
+    resultArray = c.fetchone()
+    result = {"email": resultArray[0], "firstName": resultArray[1], "lastName":resultArray[2], "gender":resultArray[3],"city":resultArray[4],"country":resultArray[5]}
     if result is None :
         return False
     else :
@@ -100,7 +101,8 @@ def get_user_data_from_token(token):
 def get_user_data_from_email(email):
     c = get_db().cursor()
     c.execute("SELECT email,firstName,lastName,gender,city,country FROM users WHERE email=?", (email,) ) 
-    result = c.fetchone()
+    resultArray = c.fetchone()
+    result = {"email": resultArray[0], "firstName": resultArray[1], "lastName":resultArray[2], "gender":resultArray[3],"city":resultArray[4],"country":resultArray[5]}
     if result is None :
         return False
     else :
@@ -108,8 +110,11 @@ def get_user_data_from_email(email):
 
 def retrieve_message_token(token):
     c = get_db().cursor()
-    c.execute("SELECT messages FROM messages WHERE receiver IN (SELECT email FROM loggedInUsers WHERE token=?)", (token,) ) 
-    result = c.fetchall()
+    c.execute("SELECT receiver, writer, messages FROM messages WHERE receiver IN (SELECT email FROM loggedInUsers WHERE token=?)", (token,) ) 
+    resultArray = c.fetchall()
+    result = []
+    for i in resultArray:
+        result.append({"receiver":i[0], "writer":i[1], "content":i[2]})
     if result is None :
         return False
     else :
@@ -117,8 +122,11 @@ def retrieve_message_token(token):
 
 def retrieve_message_email(username):
     c = get_db().cursor()
-    c.execute("SELECT messages FROM messages WHERE receiver IN (SELECT email FROM users WHERE email=?)", (username,) ) 
-    result = c.fetchall()
+    c.execute("SELECT receiver, writer, messages FROM messages WHERE receiver IN (SELECT email FROM users WHERE email=?)", (username,) ) 
+    resultArray = c.fetchall()
+    result = []
+    for i in resultArray:
+        result.append({"receiver":i[0], "writer":i[1], "content":i[2]})
     if result is None :
         return False
     else :

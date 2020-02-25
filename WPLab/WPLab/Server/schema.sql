@@ -46,5 +46,3 @@ INSERT INTO messages VALUES (0,'tim@hellberg.se','tim@hellberg.se','This is a de
 INSERT INTO messages VALUES (1,'damien@gengler.fr','tim@hellberg.se','Yooo big boi');
 
 INSERT INTO messages VALUES (2,'tim@hellberg.se','damien@gengler.fr','SkrtSkrt');
-
-INSERT INTO loggedInUsers VALUES ('tim@hellberg.se','0f4264c0ad353810bb6e8278f4ac0c08');

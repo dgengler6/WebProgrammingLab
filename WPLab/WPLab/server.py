@@ -22,29 +22,33 @@ active_web_socket_connections = dict()
 def connect():
     if request.environ.get('wsgi.websocket'):
         ws= request.environ['wsgi.websocket']
-        js_answer = ws.receive()
-        msg = json.load(js_answer)
+        while True:
+            js_answer = ws.receive()
+            msg = json.loads(js_answer)
 
-        if 'username' in msg and 'token' in msg: 
-            username = msg['username']
-            token = msg['token']
-            #Check if user already connected
-            if database_helper.check_user_logged_in_email(username) :
-                #If logged in, check if a websocket is already registered for this user 
-                if username in active_web_socket_connections :
-                    if database_helper.check_user_logged_in_token(token) : 
-                        ws.send(json.dumps({"success": False,"logout": False, "message": "Already Established Web Socket Connection"}))
+            if 'username' in msg and 'token' in msg: 
+                username = msg['username']
+                token = msg['token']
+                print("Registering WebSocket for user :"+ username +" and token :"+ token)
+                #Check if user already connected
+                if database_helper.check_user_logged_in_email(username) :
+                    #If logged in, check if a websocket is already registered for this user 
+                    if username in active_web_socket_connections :
+                        print(active_web_socket_connections[username]['token']==token)
+                        if active_web_socket_connections[username]['token'] == token : 
+                            ws.send(json.dumps({"success" : False, "message" : "Already established WS" , "logout": False }))
+                        else : 
+                            active_web_socket_connections[username]['web_socket'].send(json.dumps({"success" : False, "message" : "Logging Out" , "logout": True }))
+                            active_web_socket_connections[username] = {"web_socket": ws, "token" : token}
+                            ws.send(json.dumps({"success" : True, "message" : "Established WS connection" , "logout": False }))
+
                     else : 
-                        active_web_socket_connections[username].send(json.dumps({"success": False,"logout": True, "message": "Already Established Web Socket Connection"}))
-                        active_web_socket_connections[username] = ws
-                        ws.send(json.dumps({"success": True,"logout": False, "message": "Established Web Socket Connection"}))
-
-                else : 
-                    active_web_socket_connections[username] = ws
-                    ws.send(json.dumps({"success": True,"logout": False, "message": "Established Web Socket Connection"}))
-
-            else :
-                ws.send(json.dumps({"success": False,"logout": False, "message": "You are not signed in"}))
+                        print({"web_socket": ws, "token" : token})
+                        active_web_socket_connections[username] = {"web_socket": ws, "token" : token}
+                        print(active_web_socket_connections)
+                        ws.send(json.dumps({"success" : True, "message" : "Established WS connection" , "logout": False }))
+                else :
+                    ws.send(json.dumps({"success" : False, "message" : "not logged in" , "logout": False }))
 
 
     return

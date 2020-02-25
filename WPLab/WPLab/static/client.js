@@ -419,12 +419,26 @@ var establish_socket_connection = function(){
       connection.onopen = function(){
           console.log("Websocket succesfully opened");
           var data = {"username":localStorage.getItem("email"),"token":localStorage.getItem("token")};
+          console.log(data);
           console.log("Data sent to websocket: " + JSON.stringify(data));
           connection.send(JSON.stringify(data));
 
       }
 
-      connecion.onclose = function() {
+      connection.onmessage = function(msg){
+
+        messageFromServer = JSON.parse(msg.data);
+        console.log(messageFromServer.message);
+        if(messageFromServer.logout == true){
+          console.log("signing out");
+          localStorage.removeItem("token");
+          localStorage.removeItem("email");
+          document.getElementById("viewdiv").innerHTML = document.getElementById("loginview").text;
+          connection.close();
+        }
+        
+      }
+      connection.onclose = function() {
   		          console.log("WebSocket closed");
   	  };
 
@@ -432,10 +446,5 @@ var establish_socket_connection = function(){
   		          console.log("ERROR!");
   	  };
 
-      connection.onmessage = function(msg){
-          messageFromServer = JSON.parse(msg);
-          if(messageFromServer.logout == true){
-            signOut();
-          }
-      }
+      
   }

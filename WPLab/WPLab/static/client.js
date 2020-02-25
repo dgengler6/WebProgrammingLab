@@ -11,7 +11,7 @@ window.onload = function(){
   else{
     document.getElementById("viewdiv").innerHTML = document.getElementById("loggedinview").text;
 
-    //Establish/re-establish a socket connection 
+    //Establish/re-establish a socket connection
     establish_socket_connection();
     retrieveUserData();
     retrieveWall();
@@ -77,9 +77,13 @@ var signinSubmit = function(form){
           console.log(result);
         if(result.success){
           localStorage.setItem("token", result.data);
+          localStorage.setItem("email", form.email.value);
           document.getElementById("viewdiv").innerHTML = document.getElementById("loggedinview").text;
           retrieveUserData();
           retrieveWall();
+
+          //establish connection
+          establish_socket_connection();
 
         }else{
           document.getElementById("errormsg").innerHTML = "<div> Error: " + result.message + "</div>";
@@ -145,6 +149,7 @@ var signOut = function(){
           var result = JSON.parse(xhttp.responseText);
           if(result.success){
             localStorage.removeItem("token");
+            localStorage.removeItem("email");
             document.getElementById("viewdiv").innerHTML = document.getElementById("loginview").text;
             document.getElementById("errormsg").innerHTML = "<div>  " + result.message + "</div>";
           }
@@ -356,6 +361,8 @@ var getUser = function(form){
 
 }
 
+
+
 var httpFunction = function(sendFunction, route, sendData, token){
 
   var xhttp = new XMLHttpRequest();
@@ -407,5 +414,28 @@ var httpChangePassword = function(form){
 
 
 var establish_socket_connection = function(){
+      var connection = new WebSocket("ws://" + document.domain + ":5001/connect");
 
-}
+      connection.onopen = function(){
+          console.log("Websocket succesfully opened");
+          var data = {"username":localStorage.getItem("email"),"token":localStorage.getItem("token")};
+          console.log("Data sent to websocket: " + JSON.stringify(data));
+          connection.send(JSON.stringify(data));
+
+      }
+
+      connecion.onclose = function() {
+  		          console.log("WebSocket closed");
+  	  };
+
+  	  connection.onerror = function() {
+  		          console.log("ERROR!");
+  	  };
+
+      connection.onmessage = function(msg){
+          messageFromServer = JSON.parse(msg);
+          if(messageFromServer.logout == true){
+            signOut();
+          }
+      }
+  }

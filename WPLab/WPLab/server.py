@@ -16,14 +16,37 @@ def root():
     return send_from_directory('static','client.html')
 
 #Keep a list of users connected 
+active_web_socket_connections = dict()
+
 @app.route('/connect')
 def connect():
-    map 
     if request.environ.get('wsgi.websocket'):
         ws= request.environ['wsgi.websocket']
-        while True : 
-            message = ws.wait()
-            ws.send(message)
+        js_answer = ws.receive()
+        msg = json.load(js_answer)
+
+        if 'username' in msg and 'token' in msg: 
+            username = msg['username']
+            token = msg['token']
+            #Check if user already connected
+            if database_helper.check_user_logged_in_email(username) :
+                #If logged in, check if a websocket is already registered for this user 
+                if username in active_web_socket_connections :
+                    if database_helper.check_user_logged_in_token(token) : 
+                        ws.send(json.dumps({"success": False,"logout": False, "message": "Already Established Web Socket Connection"}))
+                    else : 
+                        active_web_socket_connections[username].send(json.dumps({"success": False,"logout": True, "message": "Already Established Web Socket Connection"}))
+                        active_web_socket_connections[username] = ws
+                        ws.send(json.dumps({"success": True,"logout": False, "message": "Established Web Socket Connection"}))
+
+                else : 
+                    active_web_socket_connections[username] = ws
+                    ws.send(json.dumps({"success": True,"logout": False, "message": "Established Web Socket Connection"}))
+
+            else :
+                ws.send(json.dumps({"success": False,"logout": False, "message": "You are not signed in"}))
+
+
     return
 
 @app.teardown_request

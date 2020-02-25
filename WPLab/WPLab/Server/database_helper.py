@@ -92,7 +92,7 @@ def get_user_data_from_token(token):
     c = get_db().cursor()
     c.execute("SELECT email,firstName,lastName,gender,city,country FROM users WHERE email in (SELECT email FROM loggedInUsers WHERE token=?)", (token,) ) 
     resultArray = c.fetchone()
-      if resultArray is None :
+    if resultArray is None :
         return False
     else :
         result = {"email": resultArray[0], "firstName": resultArray[1], "lastName":resultArray[2], "gender":resultArray[3],"city":resultArray[4],"country":resultArray[5]}
@@ -112,24 +112,24 @@ def retrieve_message_token(token):
     c = get_db().cursor()
     c.execute("SELECT receiver, writer, messages FROM messages WHERE receiver IN (SELECT email FROM loggedInUsers WHERE token=?)", (token,) ) 
     resultArray = c.fetchall()
-    result = []
-    for i in resultArray:
-        result.append({"receiver":i[0], "writer":i[1], "content":i[2]})
-    if result is None :
+    if resultArray is None :
         return False
     else :
+        result = []
+        for i in resultArray:
+            result.append({"receiver":i[0], "writer":i[1], "content":i[2]})
         return result
 
 def retrieve_message_email(username):
     c = get_db().cursor()
     c.execute("SELECT receiver, writer, messages FROM messages WHERE receiver IN (SELECT email FROM users WHERE email=?)", (username,) ) 
     resultArray = c.fetchall()
-    result = []
-    for i in resultArray:
-        result.append({"receiver":i[0], "writer":i[1], "content":i[2]})
-    if result is None :
+    if resultArray is None :
         return False
     else :
+        result = []
+        for i in resultArray:
+            result.append({"receiver":i[0], "writer":i[1], "content":i[2]})
         return result
 
 def post_message(r, w, m):

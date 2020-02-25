@@ -5,26 +5,17 @@ displayView = function(){
 };
 window.onload = function(){
 
-//code that is executed as the page is loaded.
-//You shall put your own custom code here.
-//window.alert() is not allowed to be used in your implementation.
-
-
   if(localStorage.getItem("token") == null){
     document.getElementById("viewdiv").innerHTML = document.getElementById("loginview").text;
   }
   else{
     document.getElementById("viewdiv").innerHTML = document.getElementById("loggedinview").text;
 
+    //Establish/re-establish a socket connection 
+    establish_socket_connection();
     retrieveUserData();
     retrieveWall();
-
   }
-
-
-
-
-
 };
 
 var signupSubmit = function(form){
@@ -290,9 +281,8 @@ var browseRetrieveWall = function(){
 
   if(localStorage.getItem("search") != null){
 
-    var messages = serverstub.getUserMessagesByEmail(localStorage.getItem("token"), localStorage.getItem("search"));
-    var xhttp = new XMLHTTPRequest();
-    xhttp.open("GET", "get_user_messages_email/" + localStorage.getItem("search"), true);
+    var xhttp = new XMLHttpRequest();
+    xhttp.open("GET", "/get_user_messages_email/" + localStorage.getItem("search"), true);
 
     xhttp.setRequestHeader("token", localStorage.getItem("token"));
     xhttp.onreadystatechange = function(){
@@ -413,4 +403,9 @@ var httpChangePassword = function(form){
   xhttp.send(JSON.stringify(data));
 
   return true;
+}
+
+
+var establish_socket_connection = function(){
+
 }

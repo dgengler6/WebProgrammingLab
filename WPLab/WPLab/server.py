@@ -2,14 +2,29 @@ from flask import request
 from flask import abort
 from flask import send_from_directory
 from WPLab import app
+from gevent.pywsgi import WSGIServer
+from geventwebsocket.handler import WebSocketHandler
 import WPLab.Server.database_helper as database_helper
 import secrets
 import json
 import re
 
+
+
 @app.route('/')
 def root():
     return send_from_directory('static','client.html')
+
+#Keep a list of users connected 
+@app.route('/connect')
+def connect():
+    map 
+    if request.environ.get('wsgi.websocket'):
+        ws= request.environ['wsgi.websocket']
+        while True : 
+            message = ws.wait()
+            ws.send(message)
+    return
 
 @app.teardown_request
 def after_request(exception):
@@ -138,7 +153,7 @@ def change_password():
     else:
         abort(404)
 
-#Tested and working
+
 @app.route('/get_user_data_token', methods = ['GET'])
 def get_user_data_by_token():
     if request.method == 'GET' :
@@ -155,7 +170,8 @@ def get_user_data_by_token():
         return json.dumps(answer), 200
     else:
         abort(404)
-#Change to JSON
+
+
 @app.route('/get_user_data_email/<username>', methods = ['GET'])
 def get_user_data_by_email(username):
     if request.method == 'GET' :
@@ -253,3 +269,10 @@ def post_message():
         return json.dumps(answer), 200
     else:
         abort(404)
+
+
+#Start Server 
+if __name__ == '__main__' :
+    app.debug = True 
+    http_server = WSGIServer(('',5001), app, handler_class=WebSocketHandler) 
+    http_server.serve_forever()

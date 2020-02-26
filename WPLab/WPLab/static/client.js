@@ -5,26 +5,19 @@ displayView = function(){
 };
 window.onload = function(){
 
-  if(localStorage.getItem("token") == null){
+  if(localStorage.getItem("token") == null || localStorage.getItem("email")==null){
     document.getElementById("viewdiv").innerHTML = document.getElementById("loginview").text;
   }
   else{
-    document.getElementById("viewdiv").innerHTML = document.getElementById("loggedinview").text;
+    check_token_reload();
 
-    //Establish/re-establish a socket connection
-    establish_socket_connection();
-    retrieveUserData();
-    retrieveWall();
   }
-};
+}
+
 
 var signupSubmit = function(form){
   var reqlength = 10;
-
-
-
   if(form.pwd.value != form.repPwd.value){
-
        /* dosn't show up immedietly */
        document.getElementById("errormsg").innerHTML = "<div> Error: Passwords must match </div>";
 
@@ -74,16 +67,15 @@ var signinSubmit = function(form){
       if(this.readyState == 4 && this.status== 200){
           var result = JSON.parse(xhttp.responseText);
 
-          console.log(result);
         if(result.success){
           localStorage.setItem("token", result.data);
           localStorage.setItem("email", form.email.value);
           document.getElementById("viewdiv").innerHTML = document.getElementById("loggedinview").text;
-          retrieveUserData();
-          retrieveWall();
-
           //establish connection
           establish_socket_connection();
+
+          retrieveUserData();
+          retrieveWall();
 
         }else{
           document.getElementById("errormsg").innerHTML = "<div> Error: " + result.message + "</div>";
@@ -247,16 +239,19 @@ var retrieveUserData = function(){
     if(this.readyState == 4 && this.status== 200){
         var userinfo = JSON.parse(xhttp.responseText);
 
-        if(userinfo.success){
+      if(userinfo.success){
         document.getElementById("userinformation").innerHTML = "<div> About me :</div> <div align='right'> Email: " + userinfo.data.email + "</div>" + "<div> First name: " +
         userinfo.data.firstName + "</div>" + "<div> Family name: " + userinfo.data.lastName + "</div>"
         + "<div> Gender: " + userinfo.data.gender + "</div>" + "<div > City: " + userinfo.data.city + "</div>"
         + "<div> Country: " + userinfo.data.country + "</div>";
+      }else{
+        return false;
       }
     }
   }
   xhttp.send();
 }
+
 
 var retrieveWall = function(){
 
@@ -309,9 +304,6 @@ var browseRetrieveWall = function(){
     xhttp.send();
 
 
-
-
-
   }
 
 
@@ -351,11 +343,6 @@ var getUser = function(form){
         }
       }
       xhttp.send();
-
-
-
-
-
 
 
 
@@ -412,6 +399,32 @@ var httpChangePassword = function(form){
   return true;
 }
 
+var check_token_reload = function(){
+  var xhttp = new XMLHttpRequest();
+  xhttp.open("GET","/check_token/"+localStorage.getItem("email"),true);
+  xhttp.setRequestHeader("token", localStorage.getItem("token"));
+  xhttp.onreadystatechange = function(){
+    if(this.readyState == 4 && this.status== 200){
+      var tokzer = JSON.parse(xhttp.responseText);
+      
+      if(tokzer.success){
+        console.log(tokzer.success + tokzer.message);
+        document.getElementById("viewdiv").innerHTML = document.getElementById("loggedinview").text;
+
+        //Establish/re-establish a socket connection
+        establish_socket_connection();
+        retrieveUserData()
+        retrieveWall();
+      }else{
+        document.getElementById("viewdiv").innerHTML = document.getElementById("loginview").text;
+        localStorage.removeItem("token");
+        localStorage.removeItem("email");
+      }
+    }
+  }
+  xhttp.send();
+}
+
 
 var establish_socket_connection = function(){
       var connection = new WebSocket("ws://" + document.domain + ":5001/connect");
@@ -419,8 +432,6 @@ var establish_socket_connection = function(){
       connection.onopen = function(){
           console.log("Websocket succesfully opened");
           var data = {"username":localStorage.getItem("email"),"token":localStorage.getItem("token")};
-          console.log(data);
-          console.log("Data sent to websocket: " + JSON.stringify(data));
           connection.send(JSON.stringify(data));
 
       }
@@ -430,7 +441,7 @@ var establish_socket_connection = function(){
         messageFromServer = JSON.parse(msg.data);
         console.log(messageFromServer.message);
         if(messageFromServer.logout == true){
-          console.log("signing out");
+          console.log("Another user opened a session : signing out");
           localStorage.removeItem("token");
           localStorage.removeItem("email");
           document.getElementById("viewdiv").innerHTML = document.getElementById("loginview").text;
@@ -439,7 +450,7 @@ var establish_socket_connection = function(){
         
       }
       connection.onclose = function() {
-  		          console.log("WebSocket closed");
+  		  console.log("WebSocket closed");
   	  };
 
   	  connection.onerror = function() {
@@ -448,3 +459,5 @@ var establish_socket_connection = function(){
 
       
   }
+
+  

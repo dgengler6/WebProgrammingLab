@@ -8,6 +8,10 @@ import WPLab.Server.database_helper as database_helper
 import secrets
 import json
 import re
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from string import Template
 
 
 
@@ -22,36 +26,37 @@ active_web_socket_connections = dict()
 def connect():
     if request.environ.get('wsgi.websocket'):
         ws= request.environ['wsgi.websocket']
-        while True:
+        #Might use True if there is any socket problem, but there shouldn't be now yeet 
+        while not ws.closed:
             js_answer = ws.receive()
-            msg = json.loads(js_answer)
+            if js_answer is not None :
+                msg = json.loads(js_answer)
+            else : 
+                msg={}
 
             if 'username' in msg and 'token' in msg: 
                 username = msg['username']
                 token = msg['token']
-                print("Registering WebSocket for user :"+ username +" and token :"+ token)
                 #Check if user already connected
                 if database_helper.check_user_logged_in_email(username) :
                     #If logged in, check if a websocket is already registered for this user 
                     if username in active_web_socket_connections :
-                        print(active_web_socket_connections[username]['token']==token)
-                        if active_web_socket_connections[username]['token'] == token : 
-                            ws.send(json.dumps({"success" : False, "message" : "Already established WS" , "logout": False }))
+                        if active_web_socket_connections[username]['token'] == token: 
+                            active_web_socket_connections[username] = {"web_socket": ws, "token" : token}
+                            ws.send(json.dumps({"success" : True, "message" : "Already established WS" , "logout": False }))
                         else : 
                             active_web_socket_connections[username]['web_socket'].send(json.dumps({"success" : False, "message" : "Logging Out" , "logout": True }))
+                            active_web_socket_connections[username]['web_socket'].close()
                             active_web_socket_connections[username] = {"web_socket": ws, "token" : token}
-                            ws.send(json.dumps({"success" : True, "message" : "Established WS connection" , "logout": False }))
-
-                    else : 
-                        print({"web_socket": ws, "token" : token})
+                            ws.send(json.dumps({"success" : True, "message" : "Established WS connection, logged out other instances" , "logout": False }))
+                    else :
                         active_web_socket_connections[username] = {"web_socket": ws, "token" : token}
-                        print(active_web_socket_connections)
-                        ws.send(json.dumps({"success" : True, "message" : "Established WS connection" , "logout": False }))
+                        ws.send(json.dumps({"success" : True, "message" : "Established new WS connection" , "logout": False }))
                 else :
-                    ws.send(json.dumps({"success" : False, "message" : "not logged in" , "logout": False }))
+                    ws.send(json.dumps({"success" : False, "message" : "Not logged in" , "logout": True }))
 
 
-    return
+    return ""
 
 @app.teardown_request
 def after_request(exception):
@@ -137,8 +142,15 @@ def sign_out():
             if database_helper.check_user_logged_in_token(token) is False:
                 answer = {"success" : False, "message" : "No such user logged in" , "data": "" }
             else:
+                user = database_helper.get_username_from_token(token)
                 if database_helper.remove_token(token):
                     answer = {"success" : True, "message" : "Sucessfully signed out !" , "data": "" }
+                    
+                    
+                    current_ws = active_web_socket_connections[user]
+                    print(current_ws)
+                    current_ws['web_socket'].close()
+                    print(current_ws)
                 else : 
                     answer = {"success" : False, "message" : "Unable to sign out !" , "data": "" }
         else:
@@ -296,6 +308,74 @@ def post_message():
         return json.dumps(answer), 200
     else:
         abort(404)
+
+def read_template(filename):
+    with open(filename, 'r', encoding='utf-8') as template_file:
+        template_file_content = template_file.read()
+    return Template(template_file_content)
+
+@app.route('/recover_password/<username>', methods = ['GET'])
+def recover_password(username):
+    if request.method == 'GET' :
+        headers = request.headers
+        if database_helper.check_user_exists_email(username):
+            #Generate new password 
+            temp_pwd = secrets.token_hex(16)
+
+            if database_helper.change_password_temp(username,temp_pwd):
+                #Created a bot gmail account ... 
+                address = "emailsenderproject6@gmail.com"
+                pwd = "common6project6"
+                
+                #Setup and login SMTP server 
+                s = smtplib.SMTP(host='smtp.gmail.com', port=25) #Or 465
+                s.starttls()
+                s.login(address, pwd)
+
+                msg = MIMEMultipart()  
+
+                #Initialize and set message template value
+                #message_template = read_template("template_recovery.txt")
+                #message = message_template.substitute(PERSON_NAME=username, NEW_PASSWORD=temp_pwd)
+
+                # setup the parameters of the message
+                msg['From']=address
+                msg['To']=username
+                msg['Subject']="Twidder : Password Recovery"
+
+                # add in the message body
+                msg.attach(MIMEText(temp_pwd, 'plain'))
+
+                # send the message via the server set up earlier.
+                s.send_message(msg)
+                
+                del msg
+
+                answer = {"success" : True, "message" : "Successfuly reset password, check your emails" , "data": "" }
+            else:
+                answer = {"success" : False, "message" : "Error : Unable to change password" , "data": "" }
+        else :
+            answer = {"success" : False, "message" : "No such user" , "data": "" }
+        return json.dumps(answer), 200
+    else:
+        abort(404)
+
+@app.route('/check_token/<username>', methods = ['GET'])
+def check_token(username):
+    if request.method == 'GET' :
+        headers = request.headers
+        if 'token' in headers:
+            token=headers['token']
+            if database_helper.check_user_exists_email(username):
+                if database_helper.check_user_logged_in_e_t(username,token):
+                    answer = {"success" : True, "message" : "Welcome Back" , "data": "" }
+                else : 
+                    answer = {"success" : False, "message" : "Wrong Username or Token" , "data": "" }
+            else :
+                answer = {"success" : False, "message" : "No such user " , "data": "" }
+        else : 
+            answer = {"success" : False, "message" : "Missing data" , "data": "" }
+    return json.dumps(answer), 200
 
 
 #Start Server 

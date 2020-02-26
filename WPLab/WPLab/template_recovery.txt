@@ -1,0 +1,12 @@
+
+Dear ${PERSON_NAME}, 
+
+You seem to have forgotten your password, 
+here is a temporary password that you can use to login : 
+
+    ${NEW_PASSWORD}
+
+Don't forget to change your password once you're logged in ! 
+
+Love,
+Mom

@@ -55,6 +55,18 @@ def check_user_logged_in_email(username):
     else :
         return True
 
+def check_user_logged_in_e_t(username,token): 
+    c = get_db().cursor()
+    c.execute("SELECT token FROM loggedInUsers WHERE email=?", (username,) ) 
+    result = c.fetchone()
+    print(result[0])
+    print(token)
+    print(result[0]==token)
+    if result is None :
+        return False
+    else :
+        return result[0] == token
+
 def save_user(infosList):
     conn = get_db()
     c = conn.cursor()
@@ -167,6 +179,13 @@ def change_password(token,newPwd):
     conn = get_db()
     c = conn.cursor()
     c.execute("UPDATE users SET password=? WHERE email in (SELECT email FROM loggedInUsers WHERE token=?)", (newPwd,token) ) 
+    conn.commit()
+    return True
+
+def change_password_temp(username, tempPwd):
+    conn = get_db()
+    c = conn.cursor()
+    c.execute("UPDATE users SET password=? WHERE email=?", (tempPwd,username) ) 
     conn.commit()
     return True
 

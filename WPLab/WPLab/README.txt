@@ -8,6 +8,10 @@ To leave the environement use
 
 	deactivate 
 
+Start server : 
+
+	python3  WPLab/WPLab/server.py
+
 Notes : 
 
 Don't concatenate data to SQL commands, use prepare command 
@@ -31,3 +35,9 @@ How many users online, posting on my wall ... -> Posting live statistics
 {"username":"tim3@hellberg.se","password":"timtimtimtim","firstName":"Tim","lastName":"Hellberg","gender":"Male","city":"Gothenburg","country":"Sweden"}
 
 Override the connected user 
+
+### TO ASK ###
+
+HTTP HEADER AND URL FOR GET METHODS
+
+1234567890

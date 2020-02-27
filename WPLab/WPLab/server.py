@@ -335,8 +335,8 @@ def recover_password(username):
                 msg = MIMEMultipart()  
 
                 #Initialize and set message template value
-                #message_template = read_template("template_recovery.txt")
-                #message = message_template.substitute(PERSON_NAME=username, NEW_PASSWORD=temp_pwd)
+                message_template = read_template("template_recovery.txt")
+                message = message_template.substitute(PERSON_NAME=username, NEW_PASSWORD=temp_pwd)
 
                 # setup the parameters of the message
                 msg['From']=address

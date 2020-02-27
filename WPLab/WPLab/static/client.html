@@ -23,20 +23,29 @@
 
         <div class="parentdiv2">
             <div class= "loginform">
-                <form onsubmit="signinSubmit(this);return false;" >
-                    <div class="loginemail">
-                        Email <input type="Email" name="email" placeholder="exempel@mail.com" required>
-                    </div>
+                <div id="signinform">
+                    <form onsubmit="signinSubmit(this);return false;" >
+                        <div class="loginemail">
+                            Email <input type="Email" name="email" placeholder="exempel@mail.com" required>
+                        </div>
 
-                    <div class="loginpwd">
-                          Password <input type="password" name="password" required minlength="10">
-                    </div>
-                    <div class="loginbutton">
-                          <button type="submit" name="submit">Log in</button>
-                    </div>
+                        <div class="loginpwd">
+                            Password <input type="password" name="password" required minlength="10">
+                        </div>
+                        <div class="loginbutton">
+                            <button type="submit" name="submit">Log in</button>
+                        </div>
 
 
-                </form>
+                    </form>
+                </div>
+                <div id="forgottenpwd">
+                    <form onsubmit="confirm_forgotten_password();return false;">
+                        <div class="forgotPassword">
+                            <button type="submit" name="submit">I forgot my password</button>
+                      </div>
+                    </form>
+                </div>
             </div>
 
             <div class="signup">
@@ -117,6 +126,7 @@
             <button class="tablinks active" onclick="openTab(event, 'Home')">Home </button>
             <button class="tablinks" onclick="openTab(event, 'Browse')">Browse </button>
             <button class="tablinks" onclick="openTab(event, 'Account')">Account </button>
+            <button class="tablinks" onclick="openTab(event, 'Statistics')">Statistics </button>
         </div>
 
         <div id="Home" class="loggedintabs">
@@ -170,13 +180,10 @@
 
                     </div>
 
+        </div>
 
-
-
-
-
-
-
+        <div id="Statistics" class="loggedintabs">
+            <h2>Stats</h2>
         </div>
 
         <div id="Account" class="loggedintabs">
@@ -213,6 +220,8 @@
                     <button type="button" name="signOutBtn" onclick="signOut();">Sign out</button>
               </div>
         </div>
+
+        
 
       </script>
 

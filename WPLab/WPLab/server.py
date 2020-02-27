@@ -335,8 +335,8 @@ def recover_password(username):
                 msg = MIMEMultipart()  
 
                 #Initialize and set message template value
-                message_template = read_template("template_recovery.txt")
-                message = message_template.substitute(PERSON_NAME=username, NEW_PASSWORD=temp_pwd)
+                #message_template = read_template("template_recovery.txt")
+                #message = message_template.substitute(PERSON_NAME=username, NEW_PASSWORD=temp_pwd)
 
                 # setup the parameters of the message
                 msg['From']=address
@@ -344,7 +344,7 @@ def recover_password(username):
                 msg['Subject']="Twidder : Password Recovery"
 
                 # add in the message body
-                msg.attach(MIMEText(temp_pwd, 'plain'))
+                msg.attach(MIMEText("Dear " +username+ ",\n\n You seem to have forgotten your password,\n here is a temporary one that you can use to login :\n         " + temp_pwd + "\nDon't forget to change your password once you're logged in ! \nLove, \nMom", 'plain'))
 
                 # send the message via the server set up earlier.
                 s.send_message(msg)

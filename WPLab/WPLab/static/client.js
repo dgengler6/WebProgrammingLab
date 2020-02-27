@@ -90,6 +90,39 @@ var signinSubmit = function(form){
 
 }
 
+var forgotten_password = function(form){
+  try{
+
+    //var sign_in_data = {username: form.email.value, password: form.password.value};
+
+    var xhttp = new XMLHttpRequest();
+    xhttp.open("GET","/recover_password/"+form.email.value,true);
+
+    xhttp.onreadystatechange = function(){
+      if(this.readyState == 4 && this.status== 200){
+          var result = JSON.parse(xhttp.responseText);
+
+        if(result.success){
+          document.getElementById("errormsg").innerHTML = "<div> " + result.message + "</div>";
+        }else{
+          document.getElementById("errormsg").innerHTML = "<div> Error: " + result.message + "</div>";
+        }
+      }
+    }
+    xhttp.send();
+  }catch(e){
+    console.log(e);
+  }
+    return true;
+}
+
+var confirm_forgotten_password = function(){
+  try{
+  document.getElementById("forgottenpwd").innerHTML = "<form onsubmit='forgotten_password(this);return false;' > <div> Email <input type='Email' name='email' placeholder='exempel@mail.com' required> </div> <div> <button type='submit' name='submit'>Reset my password</button></div></form>"
+}catch(e){
+  console.log(e)
+}}
+
 
 
 var openTab = function(event, tabName){
@@ -128,6 +161,7 @@ var changePassword = function(form){
     console.log(e);
   }
 }
+
 
 
 var signOut = function(){

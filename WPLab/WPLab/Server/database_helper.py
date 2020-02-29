@@ -59,9 +59,6 @@ def check_user_logged_in_e_t(username,token):
     c = get_db().cursor()
     c.execute("SELECT token FROM loggedInUsers WHERE email=?", (username,) ) 
     result = c.fetchone()
-    print(result[0])
-    print(token)
-    print(result[0]==token)
     if result is None :
         return False
     else :
@@ -188,6 +185,15 @@ def change_password_temp(username, tempPwd):
     c.execute("UPDATE users SET password=? WHERE email=?", (tempPwd,username) ) 
     conn.commit()
     return True
+
+def get_total_number_users():
+    c = get_db().cursor()
+    c.execute("SELECT count(*) FROM users ") 
+    result = c.fetchone()
+    if result is None :
+        return False
+    else :
+        return result[0]
 
 
 

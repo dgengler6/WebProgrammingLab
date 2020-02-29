@@ -19,6 +19,10 @@ from string import Template
 def root():
     return send_from_directory('static','client.html')
 
+@app.teardown_request
+def after_request(exception):
+    database_helper.disconnect_db()
+
 #Keep a list of users connected 
 active_web_socket_connections = dict()
 
@@ -26,6 +30,8 @@ active_web_socket_connections = dict()
 def connect():
     if request.environ.get('wsgi.websocket'):
         ws= request.environ['wsgi.websocket']
+
+        
         #Might use True if there is any socket problem, but there shouldn't be now yeet 
         while not ws.closed:
             js_answer = ws.receive()
@@ -52,15 +58,22 @@ def connect():
                     else :
                         active_web_socket_connections[username] = {"web_socket": ws, "token" : token}
                         ws.send(json.dumps({"success" : True, "message" : "Established new WS connection" , "logout": False }))
+                    notify_socket_online()
                 else :
                     ws.send(json.dumps({"success" : False, "message" : "Not logged in" , "logout": True }))
+            
 
 
     return ""
 
-@app.teardown_request
-def after_request(exception):
-    database_helper.disconnect_db()
+def notify_socket_online():
+    total_users = database_helper.get_total_number_users()
+    for user in active_web_socket_connections :
+        active_web_socket_connections[user]['web_socket'].send(json.dumps({"success" : True, "message" : "UpdatedConnectionData" , "statistics": True, "table" : "NUMBER_LOGGED_IN" , "data" : {"TotalUsers": total_users, "TotalOnline": len(active_web_socket_connections)} }))
+
+
+
+
 
 
 #Decided to put POST request so the username and the password are not in the URL 
@@ -78,6 +91,7 @@ def sign_in():
                         database_helper.overwrite_token(username,new_token)
                     else:
                         database_helper.save_token(username,new_token)
+
                     answer = {"success" : True, "message" : "Sucessfully signed in !" , "data": new_token }
 
                 else :
@@ -90,6 +104,7 @@ def sign_in():
         return json.dumps(answer), 200
     else:
         abort(404)
+
 
 
 #Tested and working 
@@ -146,11 +161,10 @@ def sign_out():
                 if database_helper.remove_token(token):
                     answer = {"success" : True, "message" : "Sucessfully signed out !" , "data": "" }
                     
-                    
                     current_ws = active_web_socket_connections[user]
-                    print(current_ws)
+                    del active_web_socket_connections[user]
                     current_ws['web_socket'].close()
-                    print(current_ws)
+                    notify_socket_online()
                 else : 
                     answer = {"success" : False, "message" : "Unable to sign out !" , "data": "" }
         else:

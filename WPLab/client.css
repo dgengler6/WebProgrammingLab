@@ -125,6 +125,29 @@ div.signup p{
   display: none;
 }
 
+#allStats{
+  width: 100px;
+  height: 100px;
+  background-color: #e48359;
+  border-width: 2px;
+  border-color: black;
+  border-style: solid;
+}
+
+#stats1{
+  width: 10%;
+  height: 25%;
+  position: relative;
+  float: right;
+}
+
+#stats2{
+  width: 10%;
+  height: 25%;
+  position: relative;
+  float: left;
+}
+
 #signinform {
   width: 100%;
   height: 15%;

@@ -1,17 +1,20 @@
 
+var nopChart;
+var nliChart;
+var tnpChart;
 
 displayView = function(){
 // the code required to display a view
 };
 window.onload = function(){
-
+  //page('/Home');
   if(localStorage.getItem("token") == null || localStorage.getItem("email")==null){
     document.getElementById("viewdiv").innerHTML = document.getElementById("loginview").text;
   }
   else{
     check_token_reload();
-
   }
+  
 }
 
 
@@ -72,6 +75,7 @@ var signinSubmit = function(form){
           localStorage.setItem("email", form.email.value);
           document.getElementById("viewdiv").innerHTML = document.getElementById("loggedinview").text;
           //establish connection
+          display_chart();
           establish_socket_connection();
 
           retrieveUserData();
@@ -126,8 +130,7 @@ var confirm_forgotten_password = function(){
 
 
 var openTab = function(event, tabName){
-
-
+  
   var tabcontent = document.getElementsByClassName("loggedintabs");
 
   for (var i = 0; i < tabcontent.length; i++) {
@@ -255,11 +258,9 @@ var browsePostToWall = function(form){
 
   }
 
-}catch(e){
-  console.log(e);
-}
-
-
+  }catch(e){
+    console.log(e);
+  }
   }
 
 
@@ -444,8 +445,8 @@ var check_token_reload = function(){
       if(tokzer.success){
         console.log(tokzer.success + tokzer.message);
         document.getElementById("viewdiv").innerHTML = document.getElementById("loggedinview").text;
-
         //Establish/re-establish a socket connection
+        display_chart();
         establish_socket_connection();
         retrieveUserData()
         retrieveWall();
@@ -467,19 +468,27 @@ var establish_socket_connection = function(){
           console.log("Websocket succesfully opened");
           var data = {"username":localStorage.getItem("email"),"token":localStorage.getItem("token")};
           connection.send(JSON.stringify(data));
-
       }
 
       connection.onmessage = function(msg){
 
         messageFromServer = JSON.parse(msg.data);
         console.log(messageFromServer.message);
-        if(messageFromServer.logout == true){
+        if('logout' in messageFromServer && messageFromServer.logout == true){
           console.log("Another user opened a session : signing out");
           localStorage.removeItem("token");
           localStorage.removeItem("email");
           document.getElementById("viewdiv").innerHTML = document.getElementById("loginview").text;
           connection.close();
+        }
+
+        if('statistics' in messageFromServer && messageFromServer.statistics == true){
+          if(messageFromServer.table == "NUMBER_LOGGED_IN"){
+            var data = messageFromServer.data;
+            
+            update_chart(nliChart,data.TotalOnline,0);
+            update_chart(nliChart,messageFromServer.data.TotalUsers - messageFromServer.data.TotalOnline,1);
+          }
         }
         
       }
@@ -491,7 +500,120 @@ var establish_socket_connection = function(){
   		          console.log("ERROR!");
   	  };
 
-      
   }
 
+
+
+
+var display_chart = function(){
+  your_posts_chart();
+  logged_in_users_chart();
+  total_posts_chart();
+}
+
+var update_chart = function(myChart, new_data,index){
+  try{
+      myChart.data.datasets[0].data[index] = new_data;
+      myChart.update();
+    
+   }catch(e){
+     console.log(e);
+   }
+} 
+
+var your_posts_chart = function(){
+  var ctx = document.getElementById('numberOfPosts');
+        nopChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Posts on your wall','Posts you contributed to '],
+                datasets: [{
+                    label: '# of Posts',
+                    data: [0,0],
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(99, 255, 132, 0.2)'
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(99, 255, 132, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                  responsive: false,
+                  maintainAspectRatio: false,
+                
+                scales: {
+                  yAxes: [{
+                      ticks: {
+                          beginAtZero: true
+                      }
+                  }]
+              }
+            }
+         });
+
+         
+}
+
+
+
+var logged_in_users_chart = function(){
   
+  try{
+  var ctx2 = document.getElementById('numberLoggedInUsers');
+         nliChart = new Chart(ctx2, {
+             type: 'pie',
+             data: {
+                 labels: ['Users Online','Users Offline'],
+                 datasets: [{
+                     label: '# of Posts',
+                     data: [0,0],
+                     backgroundColor: [
+                         'rgba(132, 99, 255, 0.2)',
+                         'rgba(128, 99, 132, 0.2)'
+                     ],
+                     borderColor: [
+                         'rgba(132, 99, 255, 1)',
+                         'rgba(128, 99, 132, 1)'
+                     ],
+                     borderWidth: 1
+                 }]
+             },
+             options: {
+                 maintainAspectRatio: false,
+                 responsive: false,
+             }
+          });}catch(e){console.log(e);}
+}
+
+var total_posts_chart = function(){
+  var ctx3 = document.getElementById('totalNumberPost');
+  tnpChart = new Chart(ctx3, {
+      type: 'pie',
+      data: {
+          labels: ['Total Posts','Your contribution'],
+          datasets: [{
+              label: '# of Posts',
+              data: [0,0],
+              backgroundColor: [
+                  'rgba(255, 99, 132, 0.2)',
+                  'rgba(128, 99, 132, 0.2)'
+              ],
+              borderColor: [
+                  'rgba(255, 99, 132, 1)',
+                  'rgba(128, 99, 132, 1)'
+              ],
+              borderWidth: 1
+          }]
+      },
+      options: {
+          maintainAspectRatio: false,
+          responsive: false,
+      }
+   });
+}
+
+

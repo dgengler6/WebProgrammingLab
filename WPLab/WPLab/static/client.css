@@ -65,7 +65,7 @@ padding:
   padding: 5px;
   /* paddingen här är hårdkodad, fråga om hur man fyller ut tomrum.*/
   padding-bottom: 15px;
-  
+
 
 }
 
@@ -82,7 +82,7 @@ padding:
 .loginbutton button{
     position: relative;
     float: right;
-    
+
 
 }
 
@@ -183,6 +183,8 @@ div.signup p{
   background-color: #851d41;
 }
 
+
+
 /* Style the tab */
 .tab {
   overflow: hidden;
@@ -194,8 +196,9 @@ div.signup p{
 }
 
 /* Style the buttons inside the tab */
-.tab button {
+.tab button{
   background-color: inherit;
+
   float: left;
   border: none;
   outline: none;
@@ -205,6 +208,8 @@ div.signup p{
   font-size: 17px;
   font-family: 'Trebuchet MS';
 }
+
+
 
 .ui{
   float : left;

@@ -3,18 +3,24 @@ var nopChart;
 var nliChart;
 var tnpChart;
 
+
 displayView = function(){
 // the code required to display a view
 };
 window.onload = function(){
   //page('/Home');
+
   if(localStorage.getItem("token") == null || localStorage.getItem("email")==null){
+
     document.getElementById("viewdiv").innerHTML = document.getElementById("loginview").text;
+    history.pushState({tabName: null}, "", "./");
   }
   else{
+
     check_token_reload();
+    history.pushState({tabName: 'Home'}, "", "./");
   }
-  
+
 }
 
 
@@ -57,6 +63,9 @@ var signupSubmit = function(form){
 }
 
 
+
+
+
 var signinSubmit = function(form){
   try{
 
@@ -80,6 +89,7 @@ var signinSubmit = function(form){
 
           retrieveUserData();
           retrieveWall();
+          history.pushState({tabName: 'Home'}, "", "./");
 
         }else{
           document.getElementById("errormsg").innerHTML = "<div> Error: " + result.message + "</div>";
@@ -130,7 +140,17 @@ var confirm_forgotten_password = function(){
 
 
 var openTab = function(event, tabName){
-  
+
+    if(history.state == null){
+      history.pushState({tabName}, "", "./" + tabName.toLowerCase());
+    }else if(history.state.tabName != tabName){
+      history.pushState({tabName}, "", "./" + tabName.toLowerCase());
+    }
+
+
+
+
+
   var tabcontent = document.getElementsByClassName("loggedintabs");
 
   for (var i = 0; i < tabcontent.length; i++) {
@@ -141,8 +161,12 @@ var openTab = function(event, tabName){
   for (var i = 0; i < tablinks.length; i++) {
     tablinks[i].className = tablinks[i].className.replace(" active", "");
   }
+  console.log(tabName);
   document.getElementById(tabName).style.display = "block";
+
+
   event.currentTarget.className += " active";
+
 }
 
 
@@ -181,6 +205,7 @@ var signOut = function(){
             localStorage.removeItem("email");
             document.getElementById("viewdiv").innerHTML = document.getElementById("loginview").text;
             document.getElementById("errormsg").innerHTML = "<div>  " + result.message + "</div>";
+            history.pushState({tabName: null}, "", "./");
           }
       }
     }
@@ -441,7 +466,7 @@ var check_token_reload = function(){
   xhttp.onreadystatechange = function(){
     if(this.readyState == 4 && this.status== 200){
       var tokzer = JSON.parse(xhttp.responseText);
-      
+
       if(tokzer.success){
         console.log(tokzer.success + tokzer.message);
         document.getElementById("viewdiv").innerHTML = document.getElementById("loggedinview").text;
@@ -485,12 +510,12 @@ var establish_socket_connection = function(){
         if('statistics' in messageFromServer && messageFromServer.statistics == true){
           if(messageFromServer.table == "NUMBER_LOGGED_IN"){
             var data = messageFromServer.data;
-            
+
             update_chart(nliChart,data.TotalOnline,0);
             update_chart(nliChart,messageFromServer.data.TotalUsers - messageFromServer.data.TotalOnline,1);
           }
         }
-        
+
       }
       connection.onclose = function() {
   		  console.log("WebSocket closed");
@@ -515,11 +540,11 @@ var update_chart = function(myChart, new_data,index){
   try{
       myChart.data.datasets[0].data[index] = new_data;
       myChart.update();
-    
+
    }catch(e){
      console.log(e);
    }
-} 
+}
 
 var your_posts_chart = function(){
   var ctx = document.getElementById('numberOfPosts');
@@ -544,7 +569,7 @@ var your_posts_chart = function(){
             options: {
                   responsive: false,
                   maintainAspectRatio: false,
-                
+
                 scales: {
                   yAxes: [{
                       ticks: {
@@ -555,13 +580,13 @@ var your_posts_chart = function(){
             }
          });
 
-         
+
 }
 
 
 
 var logged_in_users_chart = function(){
-  
+
   try{
   var ctx2 = document.getElementById('numberLoggedInUsers');
          nliChart = new Chart(ctx2, {
@@ -616,4 +641,33 @@ var total_posts_chart = function(){
    });
 }
 
+window.addEventListener('popstate', e => {
+    if(e.state.tabName !== null){
+      openTab(event, e.state.tabName);
+    }
+    else{
+      signOut();
+    }
 
+});
+
+
+
+
+
+
+/*page('/browse', function(){
+
+  openTab(event, 'Browse');
+
+
+});
+
+page('/account', function(){
+  openTab(event, 'Account');
+
+
+
+});
+
+page.start();*/

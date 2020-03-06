@@ -4,6 +4,7 @@ var nliChart;
 var tnpChart;
 
 
+
 displayView = function(){
 // the code required to display a view
 };
@@ -18,10 +19,11 @@ window.onload = function(){
   else{
 
     check_token_reload();
-    history.pushState({tabName: 'Home'}, "", "./");
+    //history.pushState({tabName: 'Home'}, "", "./");
   }
 
 }
+
 
 
 var signupSubmit = function(form){
@@ -89,7 +91,18 @@ var signinSubmit = function(form){
 
           retrieveUserData();
           retrieveWall();
-          history.pushState({tabName: 'Home'}, "", "./");
+          history.pushState({tabName: 'Home'}, "", "./home");
+          console.log(history.state);
+          console.log("Testar sign in");
+
+          //Should exist a better way to do this right?
+          var tablinks = document.getElementsByClassName("tablinks");
+          for (var i = 0; i < tablinks.length; i++) {
+            if(tablinks[i].innerHTML == "Home"){
+              tablinks[i].className += " active";
+            }
+            }
+
 
         }else{
           document.getElementById("errormsg").innerHTML = "<div> Error: " + result.message + "</div>";
@@ -159,13 +172,22 @@ var openTab = function(event, tabName){
   var tablinks = document.getElementsByClassName("tablinks");
 
   for (var i = 0; i < tablinks.length; i++) {
-    tablinks[i].className = tablinks[i].className.replace(" active", "");
+
+
+    if(tablinks[i].innerHTML != tabName){
+      tablinks[i].className = tablinks[i].className.replace(" active", "");
+    }
+    else{
+      tablinks[i].className += " active";
+    }
+
+
   }
-  console.log(tabName);
+  //console.log(tabName);
   document.getElementById(tabName).style.display = "block";
 
 
-  event.currentTarget.className += " active";
+  //event.currentTarget.className += " active";
 
 }
 
@@ -327,8 +349,8 @@ var retrieveWall = function(){
           for(var i=0; i < messages.data.length; i++){
 
               document.getElementById("listofposts").innerHTML +=
-              "<div class='post'> <div class='writer' >Writer : "+messages.data[i].writer +" </div> <div class='messageContent'>"+ messages.data[i].content + "</div></div>";
-          }
+              "<div class='post'> <div class='writer' >Writer : "+messages.data[i].writer +" </div> <div draggable='true' ondragstart='drag(event)' class='messageContent' >"+ messages.data[i].content + "</div></div>";
+          }                    // <div draggable="true" ondragstart="drag(event)">Hejhej</div>
         }
 
     }
@@ -471,10 +493,25 @@ var check_token_reload = function(){
         console.log(tokzer.success + tokzer.message);
         document.getElementById("viewdiv").innerHTML = document.getElementById("loggedinview").text;
         //Establish/re-establish a socket connection
-        display_chart();
+
         establish_socket_connection();
+        display_chart();
         retrieveUserData()
         retrieveWall();
+
+        console.log("test");
+        var url = window.location.href.split("/");
+        var tabToOpen = url[url.length-1];
+        if(tabToOpen != ""){
+          openTab(event, tabToOpen.charAt(0).toUpperCase() + tabToOpen.slice(1));
+        }else{
+
+
+        }
+
+
+
+
       }else{
         document.getElementById("viewdiv").innerHTML = document.getElementById("loginview").text;
         localStorage.removeItem("token");
@@ -652,22 +689,18 @@ window.addEventListener('popstate', e => {
 });
 
 
+function allowDrop(ev){
+  ev.preventDefault();
+}
 
+function drag(ev){
+  ev.dataTransfer.setData("text", ev.target.innerHTML);
+}
 
+function drop(ev){
+  ev.preventDefault();
 
-
-/*page('/browse', function(){
-
-  openTab(event, 'Browse');
-
-
-});
-
-page('/account', function(){
-  openTab(event, 'Account');
-
-
-
-});
-
-page.start();*/
+  var data = ev.dataTransfer.getData("text");
+  console.log(data);
+  ev.target.value += data + " ";
+}

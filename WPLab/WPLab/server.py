@@ -19,11 +19,27 @@ from string import Template
 def root():
     return send_from_directory('static','client.html')
 
+@app.route('/home')
+def home():
+    return send_from_directory('static','client.html')
+
+@app.route('/account')
+def account():
+    return send_from_directory('static','client.html')
+
+@app.route('/browse')
+def browse():
+    return send_from_directory('static','client.html')
+
+@app.route('/statistics')
+def statistics():
+    return send_from_directory('static','client.html')
+
 @app.teardown_request
 def after_request(exception):
     database_helper.disconnect_db()
 
-#Keep a list of users connected 
+#Keep a list of users connected
 active_web_socket_connections = dict()
 
 @app.route('/connect')
@@ -31,26 +47,26 @@ def connect():
     if request.environ.get('wsgi.websocket'):
         ws= request.environ['wsgi.websocket']
 
-        
-        #Might use True if there is any socket problem, but there shouldn't be now yeet 
+
+        #Might use True if there is any socket problem, but there shouldn't be now yeet
         while not ws.closed:
             js_answer = ws.receive()
             if js_answer is not None :
                 msg = json.loads(js_answer)
-            else : 
+            else :
                 msg={}
 
-            if 'username' in msg and 'token' in msg: 
+            if 'username' in msg and 'token' in msg:
                 username = msg['username']
                 token = msg['token']
                 #Check if user already connected
                 if database_helper.check_user_logged_in_email(username) :
-                    #If logged in, check if a websocket is already registered for this user 
+                    #If logged in, check if a websocket is already registered for this user
                     if username in active_web_socket_connections :
-                        if active_web_socket_connections[username]['token'] == token: 
+                        if active_web_socket_connections[username]['token'] == token:
                             active_web_socket_connections[username] = {"web_socket": ws, "token" : token}
                             ws.send(json.dumps({"success" : True, "message" : "Already established WS" , "logout": False }))
-                        else : 
+                        else :
                             active_web_socket_connections[username]['web_socket'].send(json.dumps({"success" : False, "message" : "Logging Out" , "logout": True }))
                             active_web_socket_connections[username]['web_socket'].close()
                             active_web_socket_connections[username] = {"web_socket": ws, "token" : token}
@@ -61,7 +77,7 @@ def connect():
                     notify_socket_online()
                 else :
                     ws.send(json.dumps({"success" : False, "message" : "Not logged in" , "logout": True }))
-            
+
 
 
     return ""
@@ -76,7 +92,7 @@ def notify_socket_online():
 
 
 
-#Decided to put POST request so the username and the password are not in the URL 
+#Decided to put POST request so the username and the password are not in the URL
 @app.route('/sign_in', methods = ['POST'])
 def sign_in():
     if request.method == 'POST' :
@@ -107,12 +123,12 @@ def sign_in():
 
 
 
-#Tested and working 
+#Tested and working
 @app.route('/sign_up', methods = ['POST'])
 def sign_up():
     if request.method == 'POST' :
         data = request.get_json()
-        
+
         if 'username' in data and 'password' in data and 'firstName' in data and 'lastName' in data and 'gender' in data and 'city' in data and 'country' in data:
             username=data['username']
             password=data['password']
@@ -122,7 +138,7 @@ def sign_up():
             city=data['city']
             country=data['country']
             infos = [username,password,firstName,lastName,gender,city,country]
-            
+
             #mauybe check format of username
             if len(username) > 30 or len(password) > 40 or len (firstName) > 20  or len(lastName) > 20  or len(gender) >10 or len(city) > 20 or len(country) > 20 :
                 answer = {"success" : False, "message" : "One of the fields is too long" , "data": "" }
@@ -160,12 +176,12 @@ def sign_out():
                 user = database_helper.get_username_from_token(token)
                 if database_helper.remove_token(token):
                     answer = {"success" : True, "message" : "Sucessfully signed out !" , "data": "" }
-                    
+
                     current_ws = active_web_socket_connections[user]
                     del active_web_socket_connections[user]
                     current_ws['web_socket'].close()
                     notify_socket_online()
-                else : 
+                else :
                     answer = {"success" : False, "message" : "Unable to sign out !" , "data": "" }
         else:
             answer = {"success" : False, "message" : "Missing one or more field" , "data": "" }
@@ -194,13 +210,13 @@ def change_password():
                             answer = {"success" : True, "message" : "Sucessfully changed password !" , "data": "" }
                         else:
                             answer = {"success" : False, "message" : "Unable to change password" , "data": "" }
-                    else: 
+                    else:
                         answer = {"success" : False, "message" : "New password is too short" , "data": "" }
                 else:
                     answer = {"success" : False, "message" : "Old passwords don't match" , "data": "" }
             else:
                 answer = {"success" : False, "message" : "You are not logged in" , "data": "" }
-        else: 
+        else:
             answer = {"success" : False, "message" : "Missing one or more field" , "data": "" }
         return json.dumps(answer), 200
     else:
@@ -216,7 +232,7 @@ def get_user_data_by_token():
             data = database_helper.get_user_data_from_token(token)
             if data is False :
                 answer = {"success" : False, "message" : "No such user logged in" , "data": "" }
-            else : 
+            else :
                 answer = {"success" : True, "message" : "Retreiving data from server " , "data": data }
         else :
             answer = {"success" : False, "message" : "Missing one or more field" , "data": "" }
@@ -285,7 +301,7 @@ def get_user_messages_by_email(username):
                             answer = {"success" : False, "message" : "You don't have any messages" , "data": None }
                         else :
                             answer = {"success" : True, "message" : "Here are the messages" , "data": data }
-                    else: 
+                    else:
                         answer = {"success" : False, "message" : "No such user in the system" , "data": "" }
                 else:
                     answer = {"success" : False, "message" : "The username is not an email adress " , "data": "" }
@@ -313,7 +329,7 @@ def post_message():
                         answer = {"success" : True, "message" : "Sucessfully posted message " , "data": "" }
                     else:
                         answer = {"success" : False, "message" : "Unable to post message " , "data": "" }
-                else: 
+                else:
                     answer = {"success" : False, "message" : "No such user in the system" , "data": "" }
             else:
                 answer = {"success" : False, "message" : "The username is not an email adress " , "data": "" }
@@ -333,20 +349,20 @@ def recover_password(username):
     if request.method == 'GET' :
         headers = request.headers
         if database_helper.check_user_exists_email(username):
-            #Generate new password 
+            #Generate new password
             temp_pwd = secrets.token_hex(16)
 
             if database_helper.change_password_temp(username,temp_pwd):
-                #Created a bot gmail account ... 
+                #Created a bot gmail account ...
                 address = "emailsenderproject6@gmail.com"
                 pwd = "common6project6"
-                
-                #Setup and login SMTP server 
+
+                #Setup and login SMTP server
                 s = smtplib.SMTP(host='smtp.gmail.com', port=25) #Or 465
                 s.starttls()
                 s.login(address, pwd)
 
-                msg = MIMEMultipart()  
+                msg = MIMEMultipart()
 
                 #Initialize and set message template value
                 #message_template = read_template("template_recovery.txt")
@@ -362,7 +378,7 @@ def recover_password(username):
 
                 # send the message via the server set up earlier.
                 s.send_message(msg)
-                
+
                 del msg
 
                 answer = {"success" : True, "message" : "Successfuly reset password, check your emails" , "data": "" }
@@ -383,17 +399,17 @@ def check_token(username):
             if database_helper.check_user_exists_email(username):
                 if database_helper.check_user_logged_in_e_t(username,token):
                     answer = {"success" : True, "message" : "Welcome Back" , "data": "" }
-                else : 
+                else :
                     answer = {"success" : False, "message" : "Wrong Username or Token" , "data": "" }
             else :
                 answer = {"success" : False, "message" : "No such user " , "data": "" }
-        else : 
+        else :
             answer = {"success" : False, "message" : "Missing data" , "data": "" }
     return json.dumps(answer), 200
 
 
-#Start Server 
+#Start Server
 if __name__ == '__main__' :
-    app.debug = True 
-    http_server = WSGIServer(('',5001), app, handler_class=WebSocketHandler) 
+    app.debug = True
+    http_server = WSGIServer(('',5001), app, handler_class=WebSocketHandler)
     http_server.serve_forever()

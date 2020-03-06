@@ -126,15 +126,10 @@
 <script id= "loggedinview" type=”text/view”> <!-- -->
 
         <div class="tab">
-            <button class="tablinks active" onclick="openTab(event, 'Home')">Home </button>
-
-
-             <!--<a href="/browse"><button class=tablinks onclick="openTab(event, 'browse')">Browse</button></a>-->
-          <!--  <a href="/account"><button class=tablinks onclick="openTab(event, 'account')">Account</button></a> -->
-
-            <button class="tablinks" onclick="openTab(event, 'Browse')">Browse </button>
-            <button class="tablinks" onclick="openTab(event, 'Account')">Account </button>
-            <button class="tablinks" onclick="openTab(event, 'Statistics')">Statistics </button>
+            <button class="tablinks" onclick="openTab(event, 'Home')">Home</button>
+            <button class="tablinks" onclick="openTab(event, 'Browse')">Browse</button>
+            <button class="tablinks" onclick="openTab(event, 'Account')">Account</button>
+            <button class="tablinks" onclick="openTab(event, 'Statistics')">Statistics</button>
         </div>
 
         <div id="Home" class="loggedintabs">
@@ -144,7 +139,7 @@
 
             </div>
 
-            <div class="postarea">
+            <div id="drop1" class="postarea" ondrop="drop(event)" ondragover="allowDrop(event)">
 
             <form onsubmit="postToWall(this); return false;">
                 <textarea name="postText" rows="8" cols="80" maxlength="500" placeholder="write your thoughts here !"></textarea>
@@ -152,6 +147,8 @@
               </form>
 
             </div>
+
+
 
 
             <div class="feed">

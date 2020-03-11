@@ -12,6 +12,7 @@ import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from string import Template
+from datetime import datetime
 
 
 
@@ -59,11 +60,10 @@ def connect():
                         active_web_socket_connections[username] = {"web_socket": ws, "token" : token}
                         ws.send(json.dumps({"success" : True, "message" : "Established new WS connection" , "logout": False }))
                     notify_socket_online()
+                    notify_socket_message(username)
+                    notify_socket_visit(username)
                 else :
                     ws.send(json.dumps({"success" : False, "message" : "Not logged in" , "logout": True }))
-            
-
-
     return ""
 
 def notify_socket_online():
@@ -71,9 +71,22 @@ def notify_socket_online():
     for user in active_web_socket_connections :
         active_web_socket_connections[user]['web_socket'].send(json.dumps({"success" : True, "message" : "UpdatedConnectionData" , "statistics": True, "table" : "NUMBER_LOGGED_IN" , "data" : {"TotalUsers": total_users, "TotalOnline": len(active_web_socket_connections)} }))
 
+def notify_socket_message(username):
+    messages_on_your_wall = database_helper.retrieve_message_email(username)
+    messages_you_contributed = database_helper.retrieve_posted_message_email(username)
+    total_messages = database_helper.count_all_messages()
+    for user in active_web_socket_connections :
+        if user == username :
+            active_web_socket_connections[user]['web_socket'].send(json.dumps({"success" : True, "message" : "UpdatedUserMessageData" , "statistics": True, "table" : "USER_MESSAGE_STAT" , "data" : {"MsgOnYourWall": len(messages_on_your_wall), "TotalContributed": len(messages_you_contributed),"TotalMessages":total_messages} }))
+        active_web_socket_connections[user]['web_socket'].send(json.dumps({"success" : True, "message" : "UpdatedGlobalMessageData" , "statistics": True, "table" : "GLOBAL_MESSAGE_STAT" , "data" :total_messages }))
 
-
-
+def notify_socket_visit(username):
+    day = datetime.now().strftime("%w")
+    visit_array = database_helper.get_profile_visits_user(username)
+    for user in active_web_socket_connections :
+        if user == username :
+            active_web_socket_connections[user]['web_socket'].send(json.dumps({"success" : True, "message" : "UpdatedProfileVisitData" , "statistics": True, "table" : "PROFILE_VISIT_STAT" , "data" : {"list": visit_array, "day":day } }))
+      
 
 
 #Decided to put POST request so the username and the password are not in the URL 
@@ -91,7 +104,6 @@ def sign_in():
                         database_helper.overwrite_token(username,new_token)
                     else:
                         database_helper.save_token(username,new_token)
-
                     answer = {"success" : True, "message" : "Sucessfully signed in !" , "data": new_token }
 
                 else :
@@ -123,7 +135,7 @@ def sign_up():
             country=data['country']
             infos = [username,password,firstName,lastName,gender,city,country]
             
-            #mauybe check format of username
+            #maybe check format of username
             if len(username) > 30 or len(password) > 40 or len (firstName) > 20  or len(lastName) > 20  or len(gender) >10 or len(city) > 20 or len(country) > 20 :
                 answer = {"success" : False, "message" : "One of the fields is too long" , "data": "" }
             else:
@@ -133,6 +145,7 @@ def sign_up():
                             answer = {"success" : False, "message" : "Password too short" , "data": "" }
                         else :
                             database_helper.save_user(infos)
+                            database_helper.set_profile_visits_user(username)
                             answer = {"success" : True, "message" : "Sucessfully signed up !" , "data": "" }
                     else:
                         answer = {"success" : False, "message" : "User already exists" , "data": "" }
@@ -186,7 +199,6 @@ def change_password():
             oldpwd = data['oldPassword']
             newpwd = data['newPassword']
             username = database_helper.get_username_from_token(token)
-            print(username)
             if username is not False :
                 if database_helper.get_password(username)==oldpwd:
                     if len(newpwd) >=10 :
@@ -238,6 +250,9 @@ def get_user_data_by_email(username):
                         answer = {"success" : False, "message" : "No such user in the system" , "data": "" }
                     else :
                         answer = {"success" : True, "message" : "Here's the data" , "data": data }
+                        day = datetime.now().strftime("%w")
+                        database_helper.update_visit_profile(username, day)
+                        notify_socket_visit(username)
                 else:
                     answer = {"success" : False, "message" : "The username is not an email adress " , "data": "" }
             else:
@@ -311,6 +326,8 @@ def post_message():
                 if database_helper.check_user_exists_email(receiver):
                     if database_helper.post_message(receiver,writer,message):
                         answer = {"success" : True, "message" : "Sucessfully posted message " , "data": "" }
+                        notify_socket_message(writer)
+                        notify_socket_message(receiver)
                     else:
                         answer = {"success" : False, "message" : "Unable to post message " , "data": "" }
                 else: 

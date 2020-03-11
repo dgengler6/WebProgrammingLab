@@ -434,23 +434,30 @@ var httpChangePassword = function(form){
   return true;
 }
 
+
+
+/*
+  Function call on reload of the page, it checks if the user is logged in on the server and chooses which view to display 
+*/ 
 var check_token_reload = function(){
   var xhttp = new XMLHttpRequest();
+
   xhttp.open("GET","/check_token/"+localStorage.getItem("email"),true);
   xhttp.setRequestHeader("token", localStorage.getItem("token"));
+
   xhttp.onreadystatechange = function(){
     if(this.readyState == 4 && this.status== 200){
       var tokzer = JSON.parse(xhttp.responseText);
       
       if(tokzer.success){
-        console.log(tokzer.success + tokzer.message);
+        // If the user is logged in, displays the logged in view, establishes socket connection, displays charts and retrieve users data 
         document.getElementById("viewdiv").innerHTML = document.getElementById("loggedinview").text;
-        //Establish/re-establish a socket connection
         display_chart();
         establish_socket_connection();
         retrieveUserData()
         retrieveWall();
       }else{
+        // If not, displays the login view and removes the potential stale token 
         document.getElementById("viewdiv").innerHTML = document.getElementById("loginview").text;
         localStorage.removeItem("token");
         localStorage.removeItem("email");
@@ -460,6 +467,8 @@ var check_token_reload = function(){
   xhttp.send();
 }
 
+
+// -------- How to esablish the socket connection and what to do when recieving a message from server --------
 
 var establish_socket_connection = function(){
       var connection = new WebSocket("ws://" + document.domain + ":5001/connect");
@@ -487,7 +496,22 @@ var establish_socket_connection = function(){
             var data = messageFromServer.data;
             
             update_chart(nliChart,data.TotalOnline,0);
-            update_chart(nliChart,messageFromServer.data.TotalUsers - messageFromServer.data.TotalOnline,1);
+            update_chart(nliChart,data.TotalUsers - data.TotalOnline,1);
+          }
+          if(messageFromServer.table == "USER_MESSAGE_STAT"){
+            var data = messageFromServer.data;
+            
+            update_chart(nopChart,data.MsgOnYourWall,0);
+            update_chart(nopChart,data.TotalContributed,1);
+          }
+          if(messageFromServer.table == "GLOBAL_MESSAGE_STAT"){
+            update_chart(nopChart,messageFromServer.data,2);
+          }
+
+          if(messageFromServer.table == "PROFILE_VISIT_STAT"){
+            console.log("here");
+            console.log(messageFromServer);
+            update_chart_profile_visit(tnpChart,messageFromServer.data.list[0],messageFromServer.data.day);
           }
         }
         
@@ -521,22 +545,68 @@ var update_chart = function(myChart, new_data,index){
    }
 } 
 
+var update_chart_profile_visit = function(myChart, weekly_data, current_day){
+  try{
+    switch(current_day){
+      case "0" : 
+        myChart.data.labels = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Today'];
+        break;
+      case "1" : 
+        myChart.data.labels = ['Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday','Today'];
+        break;
+      case "2" : 
+        myChart.data.labels = ['Wednesday','Thursday','Friday','Saturday','Sunday','Monday',  'Today'];
+        break;
+      case "3" :
+        myChart.data.labels = ['Thursday','Friday','Saturday','Sunday','Monday','Tuesday',  'Today'];
+        break;
+      case "4" :
+        myChart.data.labels = ['Friday','Saturday','Sunday','Monday','Tuesday', 'Wednesday',  'Today'];
+        break;
+      case "5" : 
+        myChart.data.labels = ['Saturday','Sunday','Monday','Tuesday', 'Wednesday', 'Thursday', 'Today'];
+        break;
+      case "6" : 
+        myChart.data.labels = ['Sunday','Monday','Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Today'];
+        break;
+      default : 
+    }
+      for (i = 0 ; i < 7 ; i++){
+        myChart.data.datasets[0].data[i] = weekly_data[(i + parseInt(current_day,10))%7];
+      }
+      myChart.update();
+    
+   }catch(e){
+     console.log(e);
+   }
+} 
+var testouille = 0 ;
+var test = function(){
+  update_chart_profile_visit(tnpChart,[1,2,7,4,5,2,10],testouille);
+  testouille++;
+  if(testouille>6) testouille = 0;
+}
+
+
+// ------------------------- Here we define all statistics charts -----------------------------
 var your_posts_chart = function(){
   var ctx = document.getElementById('numberOfPosts');
         nopChart = new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: ['Posts on your wall','Posts you contributed to '],
+                labels: ['Posts on your wall','Posts you contributed to','Number of posts on Twidder'],
                 datasets: [{
                     label: '# of Posts',
-                    data: [0,0],
+                    data: [0,0,0],
                     backgroundColor: [
                         'rgba(255, 99, 132, 0.2)',
-                        'rgba(99, 255, 132, 0.2)'
+                        'rgba(99, 255, 132, 0.2)',
+                        'rgba(99, 132, 255, 0.2)'
                     ],
                     borderColor: [
                         'rgba(255, 99, 132, 1)',
-                        'rgba(99, 255, 132, 1)'
+                        'rgba(99, 255, 132, 1)',
+                        'rgba(99, 132, 255, 1)'
                     ],
                     borderWidth: 1
                 }]
@@ -557,8 +627,6 @@ var your_posts_chart = function(){
 
          
 }
-
-
 
 var logged_in_users_chart = function(){
   
@@ -590,23 +658,17 @@ var logged_in_users_chart = function(){
 }
 
 var total_posts_chart = function(){
-  var ctx3 = document.getElementById('totalNumberPost');
+  //Make this the number of visits to your profile. (Maybe time dependent, but not sure if easy )
+  var ctx3 = document.getElementById('numberOfVisits');
   tnpChart = new Chart(ctx3, {
-      type: 'pie',
+      type: 'line',
       data: {
-          labels: ['Total Posts','Your contribution'],
-          datasets: [{
-              label: '# of Posts',
-              data: [0,0],
-              backgroundColor: [
-                  'rgba(255, 99, 132, 0.2)',
-                  'rgba(128, 99, 132, 0.2)'
-              ],
-              borderColor: [
-                  'rgba(255, 99, 132, 1)',
-                  'rgba(128, 99, 132, 1)'
-              ],
-              borderWidth: 1
+        labels: ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'],
+        datasets: [{ 
+            data: [1,2,7,3,6,2,2],
+            label: "Number of visits of your profile over last week",
+            borderColor: "#3e95cd",
+            fill: false
           }]
       },
       options: {

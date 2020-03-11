@@ -141,6 +141,27 @@ def retrieve_message_email(username):
             result.append({"receiver":i[0], "writer":i[1], "content":i[2]})
         return result
 
+def retrieve_posted_message_email(username):
+    c = get_db().cursor()
+    c.execute("SELECT receiver, writer, messages FROM messages WHERE writer=?", (username,) ) 
+    resultArray = c.fetchall()
+    if resultArray is None :
+        return False
+    else :
+        result = []
+        for i in resultArray:
+            result.append({"receiver":i[0], "writer":i[1], "content":i[2]})
+        return result
+
+def count_all_messages():
+    c = get_db().cursor()
+    c.execute("SELECT COUNT(*) FROM messages" ) 
+    result = c.fetchone()
+    if result is None :
+        return False
+    else :
+        return result[0]
+
 def post_message(r, w, m):
     conn = get_db()
     c = conn.cursor()
@@ -194,6 +215,43 @@ def get_total_number_users():
         return False
     else :
         return result[0]
+
+
+def set_profile_visits_user(username): 
+    conn = get_db()
+    c = conn.cursor()
+    c.execute("INSERT INTO profileVisitsUsers (email) VALUES (?)", (username,) ) 
+    conn.commit()
+    return True
+
+def get_profile_visits_user(username):
+    c = get_db().cursor()
+    c.execute("SELECT monday, tuesday, wednesday, thursday, friday, saturday, sunday FROM profileVisitsUsers WHERE email=?", (username,) ) 
+    resultArray = c.fetchall()
+    if resultArray is None :
+        return False
+    else :
+        return resultArray
+
+def update_visit_profile(username, day): 
+    switcher = {
+        "0" : 'sunday',
+        "1" : 'monday',
+        "2" : 'tuesday',
+        "3" : 'wednesday',
+        "4" : 'thursday',
+        "5" : 'friday',
+        "6" : 'saturday'
+    }
+    dayname = switcher.get(day,"No such day in the week ? ")
+    conn = get_db()
+    c = conn.cursor()
+    c.execute("SELECT "+dayname+" FROM profileVisitsUsers WHERE email=? ",(username,))
+    result = c.fetchone()
+    c.execute("UPDATE profileVisitsUsers SET "+dayname+" = ?+1 WHERE email=?", (result[0],username,) ) 
+    conn.commit()
+    return True
+
 
 
 

@@ -3,19 +3,27 @@ var nopChart;
 var nliChart;
 var tnpChart;
 
+
+
 displayView = function(){
 // the code required to display a view
 };
 window.onload = function(){
   //page('/Home');
+
   if(localStorage.getItem("token") == null || localStorage.getItem("email")==null){
+
     document.getElementById("viewdiv").innerHTML = document.getElementById("loginview").text;
+    history.pushState({tabName: null}, "", "./");
   }
   else{
+
     check_token_reload();
+    //history.pushState({tabName: 'Home'}, "", "./");
   }
-  
+
 }
+
 
 
 var signupSubmit = function(form){
@@ -57,6 +65,9 @@ var signupSubmit = function(form){
 }
 
 
+
+
+
 var signinSubmit = function(form){
   try{
 
@@ -80,6 +91,18 @@ var signinSubmit = function(form){
 
           retrieveUserData();
           retrieveWall();
+          history.pushState({tabName: 'Home'}, "", "./home");
+          console.log(history.state);
+          console.log("Testar sign in");
+
+          //Should exist a better way to do this right?
+          var tablinks = document.getElementsByClassName("tablinks");
+          for (var i = 0; i < tablinks.length; i++) {
+            if(tablinks[i].innerHTML == "Home"){
+              tablinks[i].className += " active";
+            }
+            }
+
 
         }else{
           document.getElementById("errormsg").innerHTML = "<div> Error: " + result.message + "</div>";
@@ -130,7 +153,17 @@ var confirm_forgotten_password = function(){
 
 
 var openTab = function(event, tabName){
-  
+
+    if(history.state == null){
+      history.pushState({tabName}, "", "./" + tabName.toLowerCase());
+    }else if(history.state.tabName != tabName){
+      history.pushState({tabName}, "", "./" + tabName.toLowerCase());
+    }
+
+
+
+
+
   var tabcontent = document.getElementsByClassName("loggedintabs");
 
   for (var i = 0; i < tabcontent.length; i++) {
@@ -139,10 +172,23 @@ var openTab = function(event, tabName){
   var tablinks = document.getElementsByClassName("tablinks");
 
   for (var i = 0; i < tablinks.length; i++) {
-    tablinks[i].className = tablinks[i].className.replace(" active", "");
+
+
+    if(tablinks[i].innerHTML != tabName){
+      tablinks[i].className = tablinks[i].className.replace(" active", "");
+    }
+    else{
+      tablinks[i].className += " active";
+    }
+
+
   }
+  //console.log(tabName);
   document.getElementById(tabName).style.display = "block";
-  event.currentTarget.className += " active";
+
+
+  //event.currentTarget.className += " active";
+
 }
 
 
@@ -181,6 +227,7 @@ var signOut = function(){
             localStorage.removeItem("email");
             document.getElementById("viewdiv").innerHTML = document.getElementById("loginview").text;
             document.getElementById("errormsg").innerHTML = "<div>  " + result.message + "</div>";
+            history.pushState({tabName: null}, "", "./");
           }
       }
     }
@@ -302,8 +349,8 @@ var retrieveWall = function(){
           for(var i=0; i < messages.data.length; i++){
 
               document.getElementById("listofposts").innerHTML +=
-              "<div class='post'> <div class='writer' >Writer : "+messages.data[i].writer +" </div> <div class='messageContent'>"+ messages.data[i].content + "</div></div>";
-          }
+              "<div class='post'> <div class='writer' >Writer : "+messages.data[i].writer +" </div> <div draggable='true' ondragstart='drag(event)' class='messageContent' >"+ messages.data[i].content + "</div></div>";
+          }                    // <div draggable="true" ondragstart="drag(event)">Hejhej</div>
         }
 
     }
@@ -448,14 +495,28 @@ var check_token_reload = function(){
   xhttp.onreadystatechange = function(){
     if(this.readyState == 4 && this.status== 200){
       var tokzer = JSON.parse(xhttp.responseText);
-      
+
       if(tokzer.success){
         // If the user is logged in, displays the logged in view, establishes socket connection, displays charts and retrieve users data 
         document.getElementById("viewdiv").innerHTML = document.getElementById("loggedinview").text;
-        display_chart();
         establish_socket_connection();
+        display_chart();
         retrieveUserData()
         retrieveWall();
+
+        console.log("test");
+        var url = window.location.href.split("/");
+        var tabToOpen = url[url.length-1];
+        if(tabToOpen != ""){
+          openTab(event, tabToOpen.charAt(0).toUpperCase() + tabToOpen.slice(1));
+        }else{
+
+
+        }
+
+
+
+
       }else{
         // If not, displays the login view and removes the potential stale token 
         document.getElementById("viewdiv").innerHTML = document.getElementById("loginview").text;
@@ -494,7 +555,7 @@ var establish_socket_connection = function(){
         if('statistics' in messageFromServer && messageFromServer.statistics == true){
           if(messageFromServer.table == "NUMBER_LOGGED_IN"){
             var data = messageFromServer.data;
-            
+
             update_chart(nliChart,data.TotalOnline,0);
             update_chart(nliChart,data.TotalUsers - data.TotalOnline,1);
           }
@@ -514,7 +575,7 @@ var establish_socket_connection = function(){
             update_chart_profile_visit(tnpChart,messageFromServer.data.list[0],messageFromServer.data.day);
           }
         }
-        
+
       }
       connection.onclose = function() {
   		  console.log("WebSocket closed");
@@ -539,11 +600,11 @@ var update_chart = function(myChart, new_data,index){
   try{
       myChart.data.datasets[0].data[index] = new_data;
       myChart.update();
-    
+
    }catch(e){
      console.log(e);
    }
-} 
+}
 
 var update_chart_profile_visit = function(myChart, weekly_data, current_day){
   try{
@@ -614,7 +675,7 @@ var your_posts_chart = function(){
             options: {
                   responsive: false,
                   maintainAspectRatio: false,
-                
+
                 scales: {
                   yAxes: [{
                       ticks: {
@@ -625,11 +686,11 @@ var your_posts_chart = function(){
             }
          });
 
-         
+
 }
 
 var logged_in_users_chart = function(){
-  
+
   try{
   var ctx2 = document.getElementById('numberLoggedInUsers');
          nliChart = new Chart(ctx2, {
@@ -678,4 +739,29 @@ var total_posts_chart = function(){
    });
 }
 
+window.addEventListener('popstate', e => {
+    if(e.state.tabName !== null){
+      openTab(event, e.state.tabName);
+    }
+    else{
+      signOut();
+    }
 
+});
+
+
+function allowDrop(ev){
+  ev.preventDefault();
+}
+
+function drag(ev){
+  ev.dataTransfer.setData("text", ev.target.innerHTML);
+}
+
+function drop(ev){
+  ev.preventDefault();
+
+  var data = ev.dataTransfer.getData("text");
+  console.log(data);
+  ev.target.value += data + " ";
+}
